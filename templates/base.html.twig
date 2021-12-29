@@ -22,12 +22,7 @@
 </head>
 <body class="hold-transition dark-mode sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed">
 <div class="wrapper">
-
-    <!-- Preloader -->
-    <div class="preloader flex-column justify-content-center align-items-center">
-        <img class="animation__wobble" src="dist/img/AdminLTELogo.png" alt="AdminLTELogo" height="60" width="60">
-    </div>
-
+    
     <!-- Navbar -->
     <nav class="main-header navbar navbar-expand navbar-dark">
         <!-- Right navbar links -->
@@ -78,11 +73,17 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <!-- Sidebar user panel (optional) -->
-            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-                <div class="info">
-                    <a href="#" class="d-block">Alexander Pierce</a>
+            <div class="row">
+                <div class="user-panel mt-3 pb-3 mb-3 col-12">
+                    <div class="info w-100 d-flex">
+                        {{ app.user.userIdentifier }}
+                        <a href="{{ path('app_logout') }}" title="Odhlásit se" class="ml-3">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
+
 
             <!-- SidebarSearch Form -->
             <div class="form-inline">

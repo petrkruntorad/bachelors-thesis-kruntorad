@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class SecurityController extends AbstractController
 {
@@ -34,16 +35,17 @@ class SecurityController extends AbstractController
     /**
      * @Route ("/login", name="login")
      */
-    public function index(): Response
+    public function index(AuthenticationUtils $authenticationUtils): Response
     {
         $users = $this->em->getRepository(User::class)->findAll();
 
         if(count($users) === 0){
             return $this->redirectToRoute('register');
         }
+        $error = $authenticationUtils->getLastAuthenticationError();
 
         return $this->render('security/login.html.twig', [
-            'controller_name' => 'SecurityController',
+            'error'=> $error,
         ]);
     }
 
@@ -66,20 +68,24 @@ class SecurityController extends AbstractController
             ->add('email', EmailType::class,[
                 'attr'=>[
                     'class'=>'form-control',
-                    'placeholder'=>'E-mail'
+                    'placeholder'=>'E-mail',
+                    'autocomplete'=>'email'
                 ]
             ])
             ->add('username', TextType::class,[
                 'attr'=>[
                     'class'=>'form-control',
-                    'placeholder'=>'Uživatelské jméno'
+                    'placeholder'=>'Uživatelské jméno',
+                     'autocomplete'=>'username'
                 ]
             ])
             ->add('password', RepeatedType::class,[
                 'type' => PasswordType::class,
                 'invalid_message' => 'Zadaná hesla se musí shodovat.',
                 'options' => ['attr' => ['class' => 'password-field']],
+                'error_bubbling'=>true,
                 'first_options'  => [
+                    'error_bubbling'=>true,
                     'attr' => [
                         'type' => 'password',
                         'class'=>'form-control',
@@ -103,6 +109,8 @@ class SecurityController extends AbstractController
 
         $form->handleRequest($request);
 
+
+
         if($form->isSubmitted() && $form->isValid()) {
             try {
                 $email = $form['email']->getData();
@@ -123,14 +131,39 @@ class SecurityController extends AbstractController
 
                 $this->em->persist($user);
                 $this->em->flush();
+
+                $this->addFlash(
+                    'good',
+                    'Prvotní registrace proběhla úspěšně.'
+                );
             }
             catch (Exception $exception)
             {
-
+                $this->addFlash(
+                    'bad',
+                    'Nastala neočekávaná vyjímka.'
+                );
+            }
+        }else{
+            foreach ($form->getErrors(true) as $formError) {
+                $this->addFlash(
+                    'bad',
+                    $formError->getMessage()
+                );
             }
         }
+
         return $this->render('security/register.html.twig', [
             'form' => $form->createView(),
+
         ]);
+    }
+
+    /**
+     * @Route("/logout", name="app_logout")
+     */
+    public function logout()
+    {
+        throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
 }
