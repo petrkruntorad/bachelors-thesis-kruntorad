@@ -1,0 +1,156 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Uživatelé</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">DataTables</li>
+                    </ol>
+                </div>
+            </div>
+        </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        {% for message in app.flashes('good') %}
+                            <div class="flash-notice pull-right col-xs-12 " style="padding:0;">
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                    <strong>{{ message|raw }}</strong>
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        {% for message in app.flashes('bad') %}
+                            <div class="flash-notice pull-right col-xs-12 " style="padding:0;">
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <strong>{{ message|raw }}</strong>
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <div class="card-header">
+                            <div class="row d-flex align-items-center">
+                                <div class="col-md-10 text-center text-md-left pt-3 pb-4 pb-md-0 pt-md-0">
+                                    <h3 class="card-title w-100">Přehled uživatelů</h3>
+                                </div>
+                                <div class="col-md-2 text-right">
+                                    <a href="{{ path('user_create') }}" class="btn btn-primary w-100" title="Vytvořit">
+                                        Vytvořit
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                            <table id="users" class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Uživatelské jméno</th>
+                                        <th>E-mail</th>
+                                        <th>Oprávnění</th>
+                                        {% if is_granted('ROLE_ADMIN') %}
+                                        <th>Akce</th>
+                                        {% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if users is defined and users is not empty %}
+                                        {% for user in users %}
+                                            <tr>
+                                                <td>{{ user.id }}</td>
+                                                <td>{{ user.userIdentifier }}</td>
+                                                <td>{{ user.email }}</td>
+                                                <td>
+                                                    {% if user.roles is not empty and user.roles is defined  %}
+                                                        {% for role in user.roles %}
+                                                            {% if role == 'ROLE_USER' %}
+                                                                <span class="role bg-blue">
+                                                                    Uživatel
+                                                                </span>
+                                                            {% elseif role == 'ROLE_ADMIN' %}
+                                                                <span class="role bg-warning">
+                                                                    Administrátor
+                                                                </span>
+                                                            {% else %}
+                                                                <span class="role bg-blue">
+                                                                    {{ role }}
+                                                                </span>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                </td>
+                                                <td></td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% endif %}
+                                <tfoot>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Jméno</th>
+                                        <th>E-mail</th>
+                                        <th>Oprávnění</th>
+                                        <th>Akce</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
+        </div>
+        <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- DataTables -->
+    <link rel="stylesheet" href="{{ asset('plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+<!-- DataTables  & Plugins -->
+    <script src="{{ asset('plugins/datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-buttons/js/dataTables.buttons.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-buttons/js/buttons.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-buttons/js/buttons.html5.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
+    <script>
+        $('#users').DataTable({
+            "paging": true,
+            "lengthChange": false,
+            "searching": false,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+        });
+    </script>
+{% endblock %}

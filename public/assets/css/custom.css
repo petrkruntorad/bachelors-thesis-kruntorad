@@ -1,0 +1,35 @@
+/* Roles */
+.role {
+    text-align: center;
+    width: 100%;
+    border-radius: 25px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    opacity: 0.8;
+    cursor: pointer;
+    padding: 3px 10px 3px 10px;
+    line-height: 1.7;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: #007bff !important;
+    border-color: #006fe6 !important;
+    color: #ffffff !important;
+    padding: 0 10px;
+    margin-top: .31rem;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: rgba(255,255,255,.7) !important;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    color: #fff !important;
+}
+
+.close {
+    color: rgba(255,255,255,.7) !important;
+    opacity: 1;
+}
+
+.close:hover {
+    color: #fff !important;
+}

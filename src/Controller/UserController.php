@@ -5,8 +5,8 @@ namespace App\Controller;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use phpDocumentor\Reflection\Types\This;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
@@ -18,8 +18,9 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
-class SecurityController extends AbstractController
+class UserController extends AbstractController
 {
+
     /**
      * @var EntityManagerInterface
      */
@@ -33,39 +34,26 @@ class SecurityController extends AbstractController
     }
 
     /**
-     * @Route ("/login", name="login")
+     * @Route ("/users", name="users_index")
      */
-    public function index(AuthenticationUtils $authenticationUtils): Response
+    public function index()
     {
         $users = $this->em->getRepository(User::class)->findAll();
 
-        if(count($users) === 0){
-            return $this->redirectToRoute('register');
-        }
-        $error = $authenticationUtils->getLastAuthenticationError();
-
-        return $this->render('security/login.html.twig', [
-            'error'=> $error,
+        return $this->render('admin/users/index.html.twig',[
+            'users'=>$users,
         ]);
     }
 
     /**
-     * @Route ("/register", name="register")
+     * @Route ("/users/create", name="user_create")
      */
-    public function register(Request $request, UserPasswordHasherInterface $passwordHasher)
+    public function create(Request $request, UserPasswordHasherInterface $passwordHasher)
     {
-        $users = $this->em->getRepository(User::class)->findAll();
-
-        if(count($users)>0){
-            $this->addFlash(
-                'bad',
-                'Prvotní registrace byla již provedena.'
-            );
-            return $this->redirectToRoute('login');
-        }
 
         $form = $this->createFormBuilder()
             ->add('email', EmailType::class,[
+                'label'=> 'E-mail',
                 'attr'=>[
                     'class'=>'form-control',
                     'placeholder'=>'E-mail',
@@ -73,39 +61,43 @@ class SecurityController extends AbstractController
                 ]
             ])
             ->add('username', TextType::class,[
+                'label'=> 'Uživatelské jméno',
                 'attr'=>[
                     'class'=>'form-control',
                     'placeholder'=>'Uživatelské jméno',
-                     'autocomplete'=>'username'
+                    'autocomplete'=>'username'
                 ]
             ])
-            ->add('password', RepeatedType::class,[
-                'type' => PasswordType::class,
-                'invalid_message' => 'Zadaná hesla se musí shodovat.',
-                'options' => ['attr' => ['class' => 'password-field']],
-                'error_bubbling'=>true,
-                'first_options'  => [
-                    'error_bubbling'=>true,
-                    'attr' => [
-                        'type' => 'password',
-                        'class'=>'form-control',
-                        'placeholder'=>'Heslo'
-                    ]
+            ->add('password', TextType::class,[
+                'label'=> 'Heslo',
+                'attr' => [
+                    'type' => 'password',
+                    'class'=>'form-control',
+                    'placeholder'=>'Heslo'
+                ]
+            ])
+            ->add('roles', ChoiceType::class, [
+                'label'=>'Role',
+                'multiple'=>true,
+                'attr'=>[
+                    'class'=>'select2',
+                    'data-placeholder'=>"Vyberte roli",
+                    'style'=>"width: 100%;",
+
                 ],
-                'second_options' => [
-                    'attr' => [
-                        'class'=>'form-control',
-                        'placeholder'=>'Heslo znovu'
-                    ]
-                ],
+                'choices'=> array(
+                    ''=>'',
+                    'Administrátor'=>'ROLE_ADMIN',
+                    'Uživatel'=>'ROLE_USER',
+                ),
             ])
             ->add('create', SubmitType::class,[
-                'label'=>'Vytvořit účet',
+                'label'=>'Přidat',
                 'attr'=> [
-                    'class'=> 'btn btn-primary btn-block',
+                    'class'=> 'btn btn-primary',
                 ],
             ])
-        ->getForm();
+            ->getForm();
 
         $form->handleRequest($request);
 
@@ -136,6 +128,8 @@ class SecurityController extends AbstractController
                     'good',
                     'Prvotní registrace proběhla úspěšně.'
                 );
+
+                return $this->redirectToRoute('users_index');
             }
             catch (Exception $exception)
             {
@@ -153,17 +147,9 @@ class SecurityController extends AbstractController
             }
         }
 
-        return $this->render('security/register.html.twig', [
+        return $this->render('admin/users/create.html.twig', [
             'form' => $form->createView(),
 
         ]);
-    }
-
-    /**
-     * @Route("/logout", name="app_logout")
-     */
-    public function logout()
-    {
-        throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
 }

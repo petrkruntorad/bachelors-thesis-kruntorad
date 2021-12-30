@@ -13,6 +13,9 @@
         <link rel="stylesheet" href="{{ asset('plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
         <!-- Theme style -->
         <link rel="stylesheet" href="{{ asset('assets/css/adminlte.min.css') }}">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}">
     {% endblock %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,11 +23,17 @@
 
 
 </head>
-<body class="hold-transition dark-mode sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed">
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed">
 <div class="wrapper">
-    
+
     <!-- Navbar -->
     <nav class="main-header navbar navbar-expand navbar-dark">
+        <!-- Left navbar links -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+        </ul>
         <!-- Right navbar links -->
         <ul class="navbar-nav ml-auto">
             <!-- Notifications Dropdown Menu -->
@@ -75,7 +84,7 @@
             <!-- Sidebar user panel (optional) -->
             <div class="row">
                 <div class="user-panel mt-3 pb-3 mb-3 col-12">
-                    <div class="info w-100 d-flex">
+                    <div class="info w-100 d-flex text-white">
                         {{ app.user.userIdentifier }}
                         <a href="{{ path('app_logout') }}" title="Odhlásit se" class="ml-3">
                             <i class="fas fa-sign-out-alt"></i>
@@ -137,15 +146,6 @@
     <script src="{{ asset('plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js') }}"></script>
     <!-- AdminLTE App -->
     <script src="{{ asset('assets/js/adminlte.js') }}"></script>
-
-    <!-- PAGE PLUGINS -->
-    <!-- jQuery Mapael -->
-    <script src="{{ asset('plugins/jquery-mousewheel/jquery.mousewheel.js') }}"></script>
-    <script src="{{ asset('plugins/raphael/raphael.min.js') }}"></script>
-    <script src="{{ asset('plugins/jquery-mapael/jquery.mapael.min.js') }}"></script>
-    <script src="{{ asset('plugins/jquery-mapael/maps/usa_states.min.js') }}"></script>
-    <!-- ChartJS -->
-    <script src="{{ asset('plugins/chart.js/Chart.min.js') }}"></script>
 
 {% endblock %}
 </body>
