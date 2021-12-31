@@ -33,6 +33,11 @@ class DeviceOptions
      */
     private $notificationsStatus;
 
+    /**
+     * @ORM\Column(name="write_interval", type="string")
+     */
+    private $writeInterval;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -84,6 +89,22 @@ class DeviceOptions
     public function setNotificationsStatus($notificationsStatus): void
     {
         $this->notificationsStatus = $notificationsStatus;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getWriteInterval()
+    {
+        return $this->writeInterval;
+    }
+
+    /**
+     * @param mixed $writeInterval
+     */
+    public function setWriteInterval($writeInterval): void
+    {
+        $this->writeInterval = $writeInterval;
     }
 
 }

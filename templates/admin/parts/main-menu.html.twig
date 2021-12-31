@@ -14,9 +14,26 @@
             </li>
             <li class="nav-item">
                 <a href="{{ path('users_index') }}" class="nav-link">
-                    <i class="nav-icon fas fa-user"></i>
+                    <i class="nav-icon fas fa-users"></i>
                     <p>
                         Uživatelé
+                    </p>
+                </a>
+            </li>
+            <li class="nav-header">Profil</li>
+            <li class="nav-item">
+                <a href="{{ path('profile_update',{'id': app.user.id}) }}" class="nav-link">
+                    <i class="nav-icon fas fa-user"></i>
+                    <p>
+                        Upravit profil
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ path('users_index') }}" class="nav-link">
+                    <i class="nav-icon fas fa-key"></i>
+                    <p>
+                        Změnit heslo
                     </p>
                 </a>
             </li>

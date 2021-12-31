@@ -27,6 +27,21 @@ class Device
      */
     private $note;
 
+    /**
+     * @ORM\Column (name="first_connection", type="datetime", nullable=true)
+     */
+    private $firstConnection;
+
+    /**
+     * @ORM\Column (name="is_allowed", type="boolean")
+     */
+    private $isAllowed;
+
+    /**
+     * @ORM\Column (name="mac_address", type="string", length=255, nullable=true)
+     */
+    private $macAddress;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -62,6 +77,54 @@ class Device
     public function setNote($note): void
     {
         $this->note = $note;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIsAllowed()
+    {
+        return $this->isAllowed;
+    }
+
+    /**
+     * @param mixed $isAllowed
+     */
+    public function setIsAllowed($isAllowed): void
+    {
+        $this->isAllowed = $isAllowed;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFirstConnection()
+    {
+        return $this->firstConnection;
+    }
+
+    /**
+     * @param mixed $firstConnection
+     */
+    public function setFirstConnection($firstConnection): void
+    {
+        $this->firstConnection = $firstConnection;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMacAddress()
+    {
+        return $this->macAddress;
+    }
+
+    /**
+     * @param mixed $macAddress
+     */
+    public function setMacAddress($macAddress): void
+    {
+        $this->macAddress = $macAddress;
     }
 
 }
