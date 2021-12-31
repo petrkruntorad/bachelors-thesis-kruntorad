@@ -5,15 +5,38 @@
             <!-- Add icons to the links using the .nav-icon class
                  with font-awesome or any other icon font library -->
             <li class="nav-item">
-                <a href="{{ path('admin_homepage') }}" class="nav-link">
+                <a href="{{ path('admin_homepage') }}" class="nav-link {% if app.request.get('_route') == 'admin_homepage' %}active{% endif %}" title="Přehled">
                     <i class="nav-icon fas fa-tachometer-alt"></i>
                     <p>
-                        Dashboard
+                        Přehled
                     </p>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ path('users_index') }}" class="nav-link">
+                <a href="#" class="nav-link">
+                    <i class="nav-icon fas fa-thermometer"></i>
+                    <p>
+                        Senzory
+                        <i class="fas fa-angle-left right"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview" style="display: none;">
+                    <li class="nav-item">
+                        <a href="pages/mailbox/mailbox.html" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Přehled</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="pages/mailbox/compose.html" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Čekající na potvrzení</p>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="{{ path('users_index') }}" class="nav-link {% if app.request.get('_route') in ['users_index','user_create','user_update'] %}active{% endif %}" title="Uživatelé">
                     <i class="nav-icon fas fa-users"></i>
                     <p>
                         Uživatelé
@@ -22,7 +45,7 @@
             </li>
             <li class="nav-header">Profil</li>
             <li class="nav-item">
-                <a href="{{ path('profile_update',{'id': app.user.id}) }}" class="nav-link">
+                <a href="{{ path('profile_update',{'id': app.user.id}) }}" class="nav-link {% if app.request.get('_route') == 'profile_update' %}active{% endif %}" title="Upravit profil">
                     <i class="nav-icon fas fa-user"></i>
                     <p>
                         Upravit profil
@@ -30,7 +53,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ path('users_index') }}" class="nav-link">
+                <a href="{{ path('profile_password_change',{'id': app.user.id}) }}" class="nav-link {% if app.request.get('_route') == 'profile_password_change' %}active{% endif %}" title="Změnit heslo">
                     <i class="nav-icon fas fa-key"></i>
                     <p>
                         Změnit heslo
