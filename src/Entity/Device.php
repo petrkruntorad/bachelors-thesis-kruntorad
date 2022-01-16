@@ -42,6 +42,11 @@ class Device
      */
     private $macAddress;
 
+    /**
+     * @ORM\Column (name="unique_hash", type="string", length=255, unique=true)
+     */
+    private $uniqueHash;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -125,6 +130,22 @@ class Device
     public function setMacAddress($macAddress): void
     {
         $this->macAddress = $macAddress;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUniqueHash()
+    {
+        return $this->uniqueHash;
+    }
+
+    /**
+     * @param mixed $uniqueHash
+     */
+    public function setUniqueHash($uniqueHash): void
+    {
+        $this->uniqueHash = $uniqueHash;
     }
 
 }

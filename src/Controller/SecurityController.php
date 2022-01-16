@@ -89,13 +89,15 @@ class SecurityController extends AbstractController
                     'attr' => [
                         'type' => 'password',
                         'class'=>'form-control',
-                        'placeholder'=>'Heslo'
+                        'placeholder'=>'Heslo',
+                        'minlength'=>8
                     ]
                 ],
                 'second_options' => [
                     'attr' => [
                         'class'=>'form-control',
-                        'placeholder'=>'Heslo znovu'
+                        'placeholder'=>'Heslo znovu',
+                         'minlength'=>8
                     ]
                 ],
             ])
@@ -136,6 +138,8 @@ class SecurityController extends AbstractController
                     'good',
                     'Prvotní registrace proběhla úspěšně.'
                 );
+
+                return $this->redirectToRoute('login');
             }
             catch (Exception $exception)
             {

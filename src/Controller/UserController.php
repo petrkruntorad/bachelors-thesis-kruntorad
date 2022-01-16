@@ -74,7 +74,8 @@ class UserController extends AbstractController
                 'attr' => [
                     'type' => 'password',
                     'class'=>'form-control',
-                    'placeholder'=>'Heslo'
+                    'placeholder'=>'Heslo',
+                     'minlength'=>8
                 ]
             ])
             ->add('roles', ChoiceType::class, [

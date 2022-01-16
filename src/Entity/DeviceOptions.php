@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\DeviceOptionsRepository;
 use Doctrine\ORM\Mapping as ORM;
 
+
 /**
  * @ORM\Entity(repositoryClass=DeviceOptionsRepository::class)
  */
@@ -22,8 +23,9 @@ class DeviceOptions
      */
     private $parentDevice;
 
+
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\User", mappedBy="email")
+     * @ORM\ManyToOne (targetEntity="App\Entity\User")
      *
      */
     private $notificationsTargetUser;

@@ -148,14 +148,16 @@ class ProfileController extends AbstractController
                     'attr' => [
                         'type' => 'password',
                         'class'=>'form-control',
-                        'placeholder'=>'Heslo'
+                        'placeholder'=>'Heslo',
+                        'minlength'=>8
                     ]
                 ],
                 'second_options' => [
                     'attr' => [
                         'label' => 'Heslo znovu',
                         'class'=>'form-control',
-                        'placeholder'=>'Heslo znovu'
+                        'placeholder'=>'Heslo znovu',
+                        'minlength'=>8
                     ]
                 ],
             ])

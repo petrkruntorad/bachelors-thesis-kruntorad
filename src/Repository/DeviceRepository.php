@@ -19,6 +19,18 @@ class DeviceRepository extends ServiceEntityRepository
         parent::__construct($registry, Device::class);
     }
 
+    public function getWaitingDevices()
+    {
+        return $this->createQueryBuilder('d')
+            ->Where('d.isAllowed = :isAllowed')
+            ->setParameter('isAllowed', 0)
+            ->andWhere('d.macAddress IS NOT NULL')
+            ->andWhere('d.firstConnection IS NOT NULL')
+            ->getQuery()
+            ->getResult()
+            ;
+    }
+
     // /**
     //  * @return Device[] Returns an array of Device objects
     //  */

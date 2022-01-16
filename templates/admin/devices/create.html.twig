@@ -1,0 +1,130 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1>Přidat zařízení</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="{{ path('devices_index') }}">Zařízení</a></li>
+                            <li class="breadcrumb-item active">Přidat</li>
+                        </ol>
+                    </div>
+                </div>
+            </div><!-- /.container-fluid -->
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <!-- left column -->
+                    <div class="col-md-12">
+                        <!-- general form elements -->
+                        <div class="card card-primary">
+                            {% for message in app.flashes('good') %}
+                                <div class="flash-notice pull-right col-xs-12 " style="padding:0;">
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        <strong>{{ message|raw }}</strong>
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            {% for message in app.flashes('bad') %}
+                                <div class="flash-notice pull-right col-xs-12 " style="padding:0;">
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        <strong>{{ message|raw }}</strong>
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            <!-- form start -->
+                            {{ form_start(form) }}
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        {{ form_label(form.name) }}
+                                        <div class="input-group">
+                                            {{ form_widget(form.name) }}
+                                            <div class="input-group-append">
+                                                <div class="input-group-text">
+                                                    <span class="fas fa-desktop"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        {{ form_label(form.note) }}
+                                        <div class="input-group">
+                                            {{ form_widget(form.note) }}
+                                            <div class="input-group-append">
+                                                <div class="input-group-text">
+                                                    <span class="fas fa-pen"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <!-- /.card-body -->
+
+                                <div class="card-footer text-right">
+                                    {{ form_widget(form.create) }}
+                                </div>
+                            {{ form_end(form) }}
+                        </div>
+                        <!-- /.card -->
+
+                    </div>
+                    <!--/.col (right) -->
+                </div>
+                <!-- /.row -->
+            </div><!-- /.container-fluid -->
+        </section>
+        <!-- /.content -->
+{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- daterange picker -->
+    <link rel="stylesheet" href="{{ asset('plugins/daterangepicker/daterangepicker.css') }}">
+    <!-- iCheck for checkboxes and radio inputs -->
+    <link rel="stylesheet" href="{{ asset('plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}">
+    <!-- Bootstrap Color Picker -->
+    <link rel="stylesheet" href="{{ asset('plugins/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css') }}">
+    <!-- Tempusdominus Bbootstrap 4 -->
+    <link rel="stylesheet" href="{{ asset('plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/select2/css/select2.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
+    <!-- Bootstrap4 Duallistbox -->
+    <link rel="stylesheet" href="{{ asset('plugins/bootstrap4-duallistbox/bootstrap-duallistbox.min.css') }}">
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('plugins/select2/js/select2.full.min.js') }}"></script>
+    <!-- Bootstrap4 Duallistbox -->
+    <script src="{{ asset('plugins/bootstrap4-duallistbox/jquery.bootstrap-duallistbox.min.js') }}"></script>
+    <!-- InputMask -->
+    <script src="{{ asset('plugins/moment/moment.min.js') }}"></script>
+    <script src="{{ asset('plugins/inputmask/min/jquery.inputmask.bundle.min.js') }}"></script>
+    <!-- date-range-picker -->
+    <script src="{{ asset('plugins/daterangepicker/daterangepicker.js') }}"></script>
+    <!-- bootstrap color picker -->
+    <script src="{{ asset('plugins/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js') }}"></script>
+    <!-- Tempusdominus Bootstrap 4 -->
+    <script src="{{ asset('plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js') }}"></script>
+    <!-- Bootstrap Switch -->
+    <script src="{{ asset('plugins/bootstrap-switch/js/bootstrap-switch.min.js') }}"></script>
+    <script>
+        $(function () {
+            //Initialize Select2 Elements
+            $('.select2').select2()
+        })
+    </script>
+{% endblock %}

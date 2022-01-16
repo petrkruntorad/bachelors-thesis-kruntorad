@@ -5,12 +5,12 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Schválená zařízení</h1>
+                    <h1>Zařízení čekající na schválení</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="{{ path('devices_index') }}">Zařízeni</a></li>
-                        <li class="breadcrumb-item active">Schválená zařízení</li>
+                        <li class="breadcrumb-item active">Zařízeni čekající na schválení</li>
                     </ol>
                 </div>
             </div>
@@ -62,21 +62,17 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Název</th>
-                                    <th>První připojení</th>
-                                    <th>MAC adresa</th>
                                     <th>Akce</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                    {% if devices is defined and devices is not empty %}
-                                        {% for device in devices %}
+                                {% if devices is defined and devices is not empty %}
+                                    {% for device in devices %}
                                         <tr>
                                             <td>{{ device.id }}</td>
                                             <td>{{ device.name }}</td>
-                                            <td>{{ device.firstConnection|date("H:m:s d/m/Y") }}</td>
-                                            <td>{{ device.macAddress }}</td>
                                             <td>
-                                                <a href="" title="Stáhnout konfigurační soubory" class="m-1 text-info">
+                                                <a href="{{ path('devices_get_config', {'id':device.id}) }}" title="Stáhnout konfigurační soubory" class="m-1 text-info">
                                                     <i class="fa fa-download" aria-hidden="true"></i>
                                                 </a>
                                                 <a href="{{ path('devices_update',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" title="Editovat zařízení" class="m-1">
@@ -90,15 +86,13 @@
                                                 </a>
                                             </td>
                                         </tr>
-                                        {% endfor %}
-                                    {% endif %}
+                                    {% endfor %}
+                                {% endif %}
                                 </tbody>
                                 <tfoot>
                                 <tr>
                                     <th>#</th>
                                     <th>Název</th>
-                                    <th>První připojení</th>
-                                    <th>MAC adresa</th>
                                     <th>Akce</th>
                                 </tr>
                                 </tfoot>
@@ -126,7 +120,7 @@
 {% endblock %}
 {% block javascripts %}
     {{ parent() }}
-<!-- DataTables  & Plugins -->
+    <!-- DataTables  & Plugins -->
     <script src="{{ asset('plugins/datatables/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
     <script src="{{ asset('plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
