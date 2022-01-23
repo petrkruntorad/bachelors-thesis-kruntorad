@@ -76,20 +76,20 @@
                                             <td>{{ device.firstConnection|date("H:m:s d/m/Y") }}</td>
                                             <td>{{ device.macAddress }}</td>
                                             <td>
-                                                <a href="" title="Potvrdit zařízení" class="m-1 text-success">
-                                                    <i class="fas fa-check"></i>
+                                                <a href="{{ path('device_activate', {'id':device.id, 'origin':app.request.attributes.get('_route')}) }}" title="Potvrdit zařízení" class="m-1 text-success">
+                                                    <i class="fa-fw fas fa-check"></i>
                                                 </a>
-                                                <a href="{{ path('devices_get_config', {'id':device.id}) }}" title="Stáhnout konfigurační soubory" class="m-1 text-info">
-                                                    <i class="fa fa-download" aria-hidden="true"></i>
+                                                <a href="{{ path('devices_get_config',{'id':device.id}) }}" title="Stáhnout konfigurační soubory" class="m-1 text-info get-config" data-toggle="modal" data-target="#modal-default">
+                                                    <i class="fa-fw fa fa-download" aria-hidden="true"></i>
                                                 </a>
                                                 <a href="{{ path('devices_update',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" title="Editovat zařízení" class="m-1">
-                                                    <i class="fas fa-pen"></i>
+                                                    <i class="fa-fw fas fa-pen"></i>
                                                 </a>
                                                 <a href="{{ path('devices_settings',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" title="Nastavení" class="m-1">
-                                                    <i class="fas fa-cog"></i>
+                                                    <i class="fa-fw fas fa-cog"></i>
                                                 </a>
                                                 <a href="{{ path('devices_remove',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" title="Smazat zařízení" class="m-1 text-danger">
-                                                    <i class="fas fa-trash"></i>
+                                                    <i class="fa-fw fas fa-trash"></i>
                                                 </a>
                                             </td>
                                         </tr>
@@ -119,6 +119,29 @@
         <!-- /.container-fluid -->
     </section>
     <!-- /.content -->
+    <div class="modal fade" id="modal-default">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Stažení instalačních souborů</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Pro stažení instalačních souborů lze na požadovaném zařízení využít tento příkaz.</p>
+                    <code>wget http://example.com/file.tar</code>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <a href="" class="btn btn-default">Stáhnout zde</a>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
 {% endblock %}
 {% block stylesheets %}
     {{ parent() }}

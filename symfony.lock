@@ -94,11 +94,17 @@
     "laminas/laminas-code": {
         "version": "4.4.3"
     },
+    "maennchen/zipstream-php": {
+        "version": "2.1.0"
+    },
     "monolog/monolog": {
         "version": "2.3.5"
     },
     "myclabs/deep-copy": {
         "version": "1.10.2"
+    },
+    "myclabs/php-enum": {
+        "version": "1.8.3"
     },
     "nikic/php-parser": {
         "version": "v4.13.0"
@@ -475,6 +481,9 @@
     "symfony/polyfill-php81": {
         "version": "v1.23.0"
     },
+    "symfony/polyfill-uuid": {
+        "version": "v1.24.0"
+    },
     "symfony/process": {
         "version": "v5.3.7"
     },
@@ -570,6 +579,9 @@
             "./config/packages/twig.yaml",
             "./templates/base.html.twig"
         ]
+    },
+    "symfony/uid": {
+        "version": "v5.3.13"
     },
     "symfony/validator": {
         "version": "5.3",

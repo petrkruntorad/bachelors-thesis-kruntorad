@@ -73,16 +73,16 @@
                                             <td>{{ device.name }}</td>
                                             <td>
                                                 <a href="{{ path('devices_get_config', {'id':device.id}) }}" title="Stáhnout konfigurační soubory" class="m-1 text-info">
-                                                    <i class="fa fa-download" aria-hidden="true"></i>
+                                                    <i class="fa-fw fa fa-download" aria-hidden="true"></i>
                                                 </a>
                                                 <a href="{{ path('devices_update',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" title="Editovat zařízení" class="m-1">
-                                                    <i class="fas fa-pen"></i>
+                                                    <i class="fa-fw fas fa-pen"></i>
                                                 </a>
                                                 <a href="{{ path('devices_settings',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" title="Nastavení" class="m-1">
-                                                    <i class="fas fa-cog"></i>
+                                                    <i class="fa-fw fas fa-cog"></i>
                                                 </a>
                                                 <a href="{{ path('devices_remove',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" title="Smazat zařízení" class="m-1 text-danger">
-                                                    <i class="fas fa-trash"></i>
+                                                    <i class="fa-fw fas fa-trash"></i>
                                                 </a>
                                             </td>
                                         </tr>

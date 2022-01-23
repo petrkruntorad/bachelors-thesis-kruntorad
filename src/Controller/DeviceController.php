@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Device;
 use App\Entity\DeviceOptions;
+use App\Entity\Sensor;
+use App\Entity\SensorData;
 use App\Entity\User;
 use App\Services\DeviceService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,6 +23,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Exception;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Uid\Uuid;
+use ZipStream\Option\Archive;
+use ZipStream\ZipStream;
 
 class DeviceController extends AbstractController
 {
@@ -387,6 +391,152 @@ class DeviceController extends AbstractController
     }
 
     /**
+     * @Route ("/device/activate/{id}/{origin}", name="device_activate")
+     * @throws Exception
+     */
+    public function activate(Device $device, $origin)
+    {
+        try {
+            $device->setIsAllowed(1);
+            $this->em->persist($device);
+            $this->em->flush();
+
+            $this->addFlash(
+                'good',
+                'Zařízení bylo úšpěšně potvrzeno.'
+            );
+        }
+        catch (Exception $exception)
+        {
+            $this->addFlash(
+                'bad',
+                'Nastala neočekávaná vyjímka: '.$exception
+            );
+        }
+        return $this->redirectToRoute($origin);
+    }
+
+    /**
+     * @Route ("/device/deactivate/{id}/{origin}", name="device_deactivate")
+     * @throws Exception
+     */
+    public function deactivate(Device $device, $origin)
+    {
+        try {
+            $device->setIsAllowed(0);
+            $this->em->persist($device);
+            $this->em->flush();
+
+            $this->addFlash(
+                'good',
+                'Zařízení bylo úšpěšně zakázáno.'
+            );
+        }
+        catch (Exception $exception)
+        {
+            $this->addFlash(
+                'bad',
+                'Nastala neočekávaná vyjímka: '.$exception
+            );
+        }
+        return $this->redirectToRoute($origin);
+    }
+
+    /**
+     * @Route ("/device/write-data", name="device_write_data")
+     * @throws Exception
+     */
+    public function write_data()
+    {
+        try {
+            if (!$_POST['uniqueHash'])
+            {
+                throw new Exception("Unique hash is missing.");
+            }
+            if (!$_POST['sensorId'])
+            {
+                throw new Exception("Sensor Id is missing.");
+            }
+            if (!$_POST['sensorData'])
+            {
+                throw new Exception("Sensor data are missing.");
+            }
+
+            $sensorId = strval($_POST['sensorId']);
+            $uniqueHash = strval($_POST['uniqueHash']);
+            $rawSensorData = floatval($_POST['rawSensorData']);
+
+            $device = $this->em->getRepository(Device::class)->findOneBy(array('uniqueHash'=>$uniqueHash));
+
+            if (!$device)
+            {
+                throw new Exception("No such device with a specified unique hash.");
+            }
+
+            $sensor = $this->em->getRepository(Sensor::class)->findOneBy(array('hardwareId'=>$sensorId, 'parentDevice'=>$device));
+
+            if (!$sensor)
+            {
+                $sensor = new Sensor();
+                $sensor->setParentDevice($device);
+                $sensor->setHardwareId($sensorId);
+                $this->em->persist($sensor);
+                $this->em->flush();
+            }
+
+            $newSensorData = new SensorData();
+            $newSensorData->setParentSensor($sensor);
+            $newSensorData->setSensorData($rawSensorData);
+            $newSensorData->setWriteTimestamp(new \DateTime("now"));
+            $this->em->persist($newSensorData);
+            $this->em->flush();
+
+        }
+        catch (Exception $exception)
+        {
+            throw new Exception("Something went wrong: ".$exception);
+        }
+    }
+
+    /**
+     * @Route ("/device/touch-server", name="device_touch")
+     * @throws Exception
+     */
+    public function touchServer()
+    {
+        try {
+            if (!$_POST['uniqueHash'])
+            {
+                throw new Exception("Unique hash is missing.");
+            }
+
+            $uniqueHash = strval($_POST['uniqueHash']);
+            $macAddress = strval($_POST['macAddress']);
+
+            $device = $this->em->getRepository(Device::class)->findOneBy(array('uniqueHash'=>$uniqueHash));
+
+            if (!$device)
+            {
+                throw new Exception("No such device with a specified unique hash.");
+            }
+
+            if (!$device->getFirstConnection())
+            {
+                $device->setFirstConnection(new \DateTime("now"));
+            }
+            $device->setMacAddress($macAddress);
+
+            $this->em->persist($device);
+            $this->em->flush();
+
+        }
+        catch (Exception $exception)
+        {
+            throw new Exception("Something went wrong: ".$exception);
+        }
+    }
+
+    /**
      * @Route ("/devices/get_config/{id}", name="devices_get_config")
      */
     public function get_config(Device $device)
@@ -397,17 +547,40 @@ class DeviceController extends AbstractController
 
         $fileContent['uniqueHash'] = $device->getUniqueHash();
         $fileContent['writeInterval'] = $deviceOptions->getWriteInterval();
-        $fileContent['targetUrl'] = $this->generateUrl('admin_homepage', array(), UrlGeneratorInterface::ABSOLUTE_URL);
+        $fileContent['writeUrl'] = $this->generateUrl('device_write_data', array(), UrlGeneratorInterface::ABSOLUTE_URL);
+        $fileContent['updateUrl'] = $this->generateUrl('device_write_data', array(), UrlGeneratorInterface::ABSOLUTE_URL);
+        $fileContent['touchUrl'] = $this->generateUrl('device_touch', array(), UrlGeneratorInterface::ABSOLUTE_URL);
 
-        $response = new Response(json_encode($fileContent, JSON_UNESCAPED_UNICODE));
+        try {
+            $files = array("main.py", "functions.py", "init.py");
 
-        $disposition = HeaderUtils::makeDisposition(
-            HeaderUtils::DISPOSITION_ATTACHMENT,
-            'config.json'
-        );
+            $zip = new \ZipArchive();
 
-        $response->headers->set('Content-Disposition', $disposition);
+            $filename = "install.zip";
 
-        return $response;
+            $zip->open($filename,  \ZipArchive::CREATE);
+
+            $zip->addFromString("config.json", json_encode($fileContent, JSON_UNESCAPED_UNICODE));
+            foreach ($files as $file) {
+                $zip->addFile($this->getParameter('client_folder').'/'.basename($file), $file);
+            }
+
+            $zip->close();
+
+            $response = new Response(file_get_contents($filename));
+            $response->headers->set('Content-Type', 'application/zip');
+            $response->headers->set('Content-Disposition', 'attachment;filename="' . $filename . '"');
+            $response->headers->set('Content-length', filesize($filename));
+
+            @unlink($filename);
+
+            return $response;
+
+        }catch (Exception $exception)
+        {
+            throw new Exception($exception);
+        }
     }
+
+
 }
