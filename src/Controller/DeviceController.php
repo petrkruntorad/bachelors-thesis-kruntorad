@@ -85,6 +85,14 @@ class DeviceController extends AbstractController
     }
 
     /**
+     * @Route ("/devices/detail/{id}", name="devices_detail")
+     */
+    public function detail(Device $device)
+    {
+        return $this->render('admin/devices/detail.html.twig',[
+        ]);
+    }
+    /**
      * @Route ("/devices/create/{origin}", name="devices_create")
      */
     public function create(Request $request, $origin){

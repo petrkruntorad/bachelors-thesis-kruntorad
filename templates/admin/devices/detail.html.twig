@@ -1,0 +1,266 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Flot Charts</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Flot</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-6">
+                <!-- interactive chart -->
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="far fa-chart-bar"></i>
+                            Interactive Area Chart
+                        </h3>
+
+                        <div class="card-tools">
+                            Real time
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="test1" style="height: 300px;"></div>
+                    </div>
+                    <!-- /.card-body-->
+                </div>
+                <!-- /.card -->
+
+            </div>
+            <!-- /.col -->
+            <div class="col-6">
+                <!-- interactive chart -->
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="far fa-chart-bar"></i>
+                            Interactive Area Chart
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="test2" style="height: 300px;"></div>
+                    </div>
+                    <!-- /.card-body-->
+                </div>
+                <!-- /.card -->
+
+            </div>
+            <!-- /.col -->
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- DataTables -->
+    <link rel="stylesheet" href="{{ asset('plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <!-- DataTables  & Plugins -->
+    <script src="{{ asset('plugins/datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-buttons/js/dataTables.buttons.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-buttons/js/buttons.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('plugins/jszip/jszip.min.js') }}"></script>
+    <script src="{{ asset('plugins/pdfmake/pdfmake.min.js') }}"></script>
+    <script src="{{ asset('plugins/pdfmake/vfs_fonts.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-buttons/js/buttons.html5.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
+    <!-- FLOT CHARTS -->
+    <script src="{{ asset('plugins/flot/jquery.flot.js') }}"></script>
+    <!-- FLOT RESIZE PLUGIN - allows the chart to redraw when the window is resized -->
+    <script src="{{ asset('plugins/flot/plugins/jquery.flot.resize.js') }}"></script>
+    <!-- FLOT PIE PLUGIN - also used to draw donut charts -->
+    <script src="{{ asset('plugins/flot/plugins/jquery.flot.pie.js') }}"></script>
+    <!-- Page specific script -->
+    <script>
+        $(function () {
+            /*
+             * Flot Interactive Chart
+             * -----------------------
+             */
+            // We use an inline data source in the example, usually data would
+            // be fetched from a server
+            var data        = [],
+                totalPoints = 100
+
+            function getRandomData() {
+
+                if (data.length > 0) {
+                    data = data.slice(1)
+                }
+
+                // Do a random walk
+                while (data.length < totalPoints) {
+
+                    var prev = data.length > 0 ? data[data.length - 1] : 50,
+                        y    = prev + Math.random() * 10 - 5
+
+                    if (y < 0) {
+                        y = 0
+                    } else if (y > 100) {
+                        y = 100
+                    }
+
+                    data.push(y)
+                }
+
+                // Zip the generated y values with the x values
+                var res = []
+                for (var i = 0; i < data.length; ++i) {
+                    res.push([i, data[i]])
+                }
+
+                return res
+            }
+            const chartIds = ['test1','test2'];
+            chartIds.forEach(device=>{
+                var interactive_plot = $.plot('#'+device+'', [
+                        {
+                            data: getRandomData(),
+                        }
+                    ],
+                    {
+                        grid: {
+                            borderColor: '#f3f3f3',
+                            borderWidth: 1,
+                            tickColor: '#f3f3f3',
+                            clickable: true,
+                            hoverable: true,
+                            mouseActiveRadius: 15,
+                        },
+                        series: {
+                            shadowSize: 0, // Drawing is faster without shadows
+                            color: '#3c8dbc',
+                            lines: {
+                                lineWidth: 2,
+                                show: true,
+                                fill: true,
+                            },
+                            points: {
+                                show: true
+                            },
+                        },
+                        yaxis: {
+                            min: 0,
+                            max: 120,
+                            show: true,
+                            ticks: 10,
+                        },
+                        xaxis: {
+                            show: true
+                        }
+                    }
+                )
+
+                var updateInterval = 500 //Fetch data ever x milliseconds
+                var realtime       = 'on' //If == to on then fetch data every x seconds. else stop fetching
+                function update() {
+
+                    interactive_plot.setData([getRandomData()])
+
+                    // Since the axes don't change, we don't need to call plot.setupGrid()
+                    interactive_plot.draw()
+                    if (realtime === 'on') {
+                        setTimeout(update, updateInterval)
+                    }
+                }
+
+                //INITIALIZE REALTIME DATA FETCHING
+                if (realtime === 'on') {
+                    update()
+                }
+                //REALTIME TOGGLE
+                $('#'+device+' .btn').click(function () {
+                    if ($(this).data('toggle') === 'on') {
+                        realtime = 'on'
+                    }
+                    else {
+                        realtime = 'off'
+                    }
+                    update()
+                })
+                /*
+                 * END INTERACTIVE CHART
+                 */
+
+
+                /*
+                 * LINE CHART
+                 * ----------
+                 */
+                //LINE randomly generated data
+
+                var sin = [],
+                    cos = []
+                for (var i = 0; i < 14; i += 0.5) {
+                    sin.push([i, Math.sin(i)])
+                    cos.push([i, Math.cos(i)])
+                }
+                var line_data1 = {
+                    data : sin,
+                    color: '#3c8dbc'
+                }
+                var line_data2 = {
+                    data : cos,
+                    color: '#00c0ef'
+                }
+                $("#"+device+"").bind("plothover", function (event, pos, item) {
+                    if (item) {
+                        if (previousPoint !== item.dataIndex) {
+
+                            previousPoint = item.dataIndex;
+
+                            $("#tooltip").remove();
+                            var x = item.datapoint[0].toFixed(2),
+                                y = item.datapoint[1].toFixed(2);
+
+                            showTooltip(item.pageX, item.pageY,
+                                "Teplota=" + y);
+                        }
+                    } else {
+                        $("#tooltip").remove();
+                        previousPoint = null;
+                    }
+                });
+            })
+        })
+
+        function showTooltip(x, y, contents) {
+            $("<div id='tooltip'>" + contents + "</div>").css({
+                position: "absolute",
+                display: "none",
+                top: y + 5,
+                left: x - 40,
+                border: "1px solid #fdd",
+                padding: "2px",
+                "background-color": "#fee",
+                opacity: 0.80
+            }).appendTo("body").fadeIn(200);
+        }
+
+    </script>
+{% endblock %}

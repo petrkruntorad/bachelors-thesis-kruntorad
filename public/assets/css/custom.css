@@ -33,3 +33,14 @@
 .close:hover {
     color: #fff !important;
 }
+
+
+.modal-header .close {
+    color: rgba(0,0,0,1) !important;
+    opacity: 1;
+    align-self: center;
+}
+
+.modal-header .close:hover {
+    color: rgba(0,0,0,.7) !important;
+}

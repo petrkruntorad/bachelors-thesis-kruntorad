@@ -71,7 +71,11 @@
                                 {% if devices is defined and devices is not empty %}
                                     {% for device in devices %}
                                         <tr>
-                                            <td>{{ device.id }}</td>
+                                            <td>
+                                                <a href="{{ path('devices_detail',{'id':device.id}) }}" title="Detail zařízení">
+                                                    {{ device.id }}
+                                                </a>
+                                            </td>
                                             <td>{{ device.name }}</td>
                                             <td>{{ device.firstConnection|date("H:m:s d/m/Y") }}</td>
                                             <td>{{ device.macAddress }}</td>
@@ -79,7 +83,7 @@
                                                 <a href="{{ path('device_activate', {'id':device.id, 'origin':app.request.attributes.get('_route')}) }}" title="Potvrdit zařízení" class="m-1 text-success">
                                                     <i class="fa-fw fas fa-check"></i>
                                                 </a>
-                                                <a href="{{ path('devices_get_config',{'id':device.id}) }}" title="Stáhnout konfigurační soubory" class="m-1 text-info get-config" data-toggle="modal" data-target="#modal-default">
+                                                <a href="#" title="Stáhnout konfigurační soubory" class="m-1 text-info get-config" onclick="showModal('{{ url('devices_get_config',{'id':device.id}) }}');">
                                                     <i class="fa-fw fa fa-download" aria-hidden="true"></i>
                                                 </a>
                                                 <a href="{{ path('devices_update',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" title="Editovat zařízení" class="m-1">
@@ -130,11 +134,11 @@
                 </div>
                 <div class="modal-body">
                     <p>Pro stažení instalačních souborů lze na požadovaném zařízení využít tento příkaz.</p>
-                    <code>wget http://example.com/file.tar</code>
+                    <code>wget <span id="downloadUrl"></span></code>
                 </div>
                 <div class="modal-footer justify-content-between">
-                    <a href="" class="btn btn-default">Stáhnout zde</a>
-                    <button type="button" class="btn btn-primary">Save changes</button>
+                    <a href="#" class="btn btn-default" id="downloadConfigBtn">Stáhnout zde</a>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Zavřít</button>
                 </div>
             </div>
             <!-- /.modal-content -->
@@ -165,6 +169,14 @@
     <script src="{{ asset('plugins/datatables-buttons/js/buttons.html5.min.js') }}"></script>
     <script src="{{ asset('plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
     <script src="{{ asset('plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
+    <script>
+        function showModal(configUrl){
+            $("#modal-default").modal().show();
+            console.log(configUrl);
+            $("#modal-default #downloadUrl").text(configUrl);
+            $("#modal-default #downloadConfigBtn").attr("href",configUrl);
+        }
+    </script>
     <script>
         $(function () {
             $("#devices").DataTable({
