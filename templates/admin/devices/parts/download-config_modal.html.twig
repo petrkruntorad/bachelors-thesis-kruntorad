@@ -1,0 +1,35 @@
+{% block downloadConfigModal %}
+    <div class="modal fade" id="modal-default">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Stažení instalačních souborů</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Pro stažení instalačních souborů lze na požadovaném zařízení využít tento příkaz.</p>
+                    <code>wget --content-disposition <span id="downloadUrl"></span></code>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <a href="#" class="btn btn-default" id="downloadConfigBtn">Stáhnout zde</a>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Zavřít</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+{% endblock %}
+{% block javascripts %}
+    <script>
+        function showModal(configUrl){
+            $("#modal-default").modal().show();
+            console.log(configUrl);
+            $("#modal-default #downloadUrl").text(configUrl);
+            $("#modal-default #downloadConfigBtn").attr("href",configUrl);
+        }
+    </script>
+{% endblock %}

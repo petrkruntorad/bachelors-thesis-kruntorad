@@ -72,7 +72,7 @@
                                             <td>{{ device.id }}</td>
                                             <td>{{ device.name }}</td>
                                             <td>
-                                                <a href="{{ path('devices_get_config', {'id':device.id}) }}" title="Stáhnout konfigurační soubory" class="m-1 text-info">
+                                                <a href="#" title="Stáhnout konfigurační soubory" class="m-1 text-info get-config" onclick="showModal('{{ url('devices_get_config',{'id':device.id}) }}');">
                                                     <i class="fa-fw fa fa-download" aria-hidden="true"></i>
                                                 </a>
                                                 <a href="{{ path('devices_update',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" title="Editovat zařízení" class="m-1">
@@ -110,6 +110,7 @@
         <!-- /.container-fluid -->
     </section>
     <!-- /.content -->
+    {% include 'admin/devices/parts/download-config_modal.html.twig' %}
 {% endblock %}
 {% block stylesheets %}
     {{ parent() }}
