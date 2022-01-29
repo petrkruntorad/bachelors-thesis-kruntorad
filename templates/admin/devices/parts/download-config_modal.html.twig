@@ -10,7 +10,7 @@
                 </div>
                 <div class="modal-body">
                     <p>Pro stažení instalačních souborů lze na požadovaném zařízení využít tento příkaz.</p>
-                    <code>wget --content-disposition <span id="downloadUrl"></span></code>
+                    <code>wget -O install.zip <span id="downloadUrl"></span>;<br>unzip -o install.zip</code>
                 </div>
                 <div class="modal-footer justify-content-between">
                     <a href="#" class="btn btn-default" id="downloadConfigBtn">Stáhnout zde</a>
@@ -27,7 +27,6 @@
     <script>
         function showModal(configUrl){
             $("#modal-default").modal().show();
-            console.log(configUrl);
             $("#modal-default #downloadUrl").text(configUrl);
             $("#modal-default #downloadConfigBtn").attr("href",configUrl);
         }

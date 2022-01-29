@@ -72,7 +72,7 @@
                                     {% for device in devices %}
                                         <tr>
                                             <td>
-                                                <a href="{{ path('devices_detail',{'id':device.id}) }}" title="Detail zařízení">
+                                                <a href="{{ path('devices_detail',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" title="Detail zařízení">
                                                     {{ device.id }}
                                                 </a>
                                             </td>
@@ -83,7 +83,7 @@
                                                 <a href="{{ path('device_activate', {'id':device.id, 'origin':app.request.attributes.get('_route')}) }}" title="Potvrdit zařízení" class="m-1 text-success">
                                                     <i class="fa-fw fas fa-check"></i>
                                                 </a>
-                                                <a href="#" title="Stáhnout konfigurační soubory" class="m-1 text-info get-config" onclick="showModal('{{ url('devices_get_config',{'id':device.id}) }}');">
+                                                <a href="#" title="Stáhnout konfigurační soubory" class="m-1 text-info get-config" onclick="showModal('{{ url('devices_get_config',{'id':device.id})|e('js') }}');">
                                                     <i class="fa-fw fa fa-download" aria-hidden="true"></i>
                                                 </a>
                                                 <a href="{{ path('devices_update',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" title="Editovat zařízení" class="m-1">

@@ -1,12 +1,33 @@
-import os, time, requests
+import os, time, requests, re
 
 # variables
 sensors = []
-temperatures = []
+temperature = None
+
+def getMainNetworkInterfaceMacAdress():
+    cmdipa = os.popen('ip a | grep link/ether').read()
+    cmdipa = cmdipa.splitlines()
+    allMacAddresses = []
+    for mac in cmdipa:
+        mac = mac.split(' ')
+        allMacAddresses.append(mac[5])
+
+    return allMacAddresses[0]
+
+def touchServer(uniqueHash: str, touchUrl: str):
+    macAddress = getMainNetworkInterfaceMacAdress()
+
+    session = requests.Session()
+
+    data = {'uniqueHash': uniqueHash, 'macAddress': macAddress}
+
+    request = session.post(url=touchUrl, data=data)
+
+    return request.text
 
 
 def loadSensors():
-    cmdLs = os.popen('ls sys/bus/w1/devices/ | grep ^28').read()
+    cmdLs = os.popen('ls /sys/bus/w1/devices/ | grep ^28').read()
     cmdLs = cmdLs.splitlines()
     for id in cmdLs:
         sensors.append(id)
@@ -18,20 +39,25 @@ def logEvent(eventContent: str, eventType: str):
 
 
 def saveTemperatures(sensors: list, writeUrl: str, uniqueHash: str):
-    for singleSensor in range(len(sensors)):
-        for polltime in range(0, 3):
-            text = ''
-            while text.split("\n")[0].find("YES") == -1:
-                tfile = open("/sys/bus/w1/devices/" + sensors[singleSensor] + "/w1_slave")
-                text = tfile.read()
-                tfile.close()
-                time.sleep(1)
-            secondline = text.split("\n")[1]
-            temperatureData = secondline.split(" ")[9]
-            temperature = float(temperatureData[2:]) / 1000
+    for singleSensor in sensors:
+        print(singleSensor)
+        with open("/sys/bus/w1/devices/" + singleSensor + "/w1_slave", "r") as file:
+            for line in file:
+                if "t=" in line:
+                    lineSplit = line.split(" ")
+                    for value in lineSplit:
+                        if value.startswith("t="):
+                            temperature = float(value[2:]) / 1000
+                            print(temperature)
 
+        if temperature:
             session = requests.Session()
 
-            post_data = {'sensorId': sensors[singleSensor], 'rawSensorData': temperature, 'uniqueHash': uniqueHash}
+            data = {'sensorId': singleSensor, 'rawSensorData': temperature, 'uniqueHash': uniqueHash}
 
-            session.post(url=writeUrl, data=post_data)
+            insert_request = session.post(url=writeUrl, data=data)
+
+            print(insert_request.text)
+        else:
+            raise ValueError("Temperature is missing.")
+

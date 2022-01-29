@@ -85,11 +85,24 @@ class DeviceController extends AbstractController
     }
 
     /**
-     * @Route ("/devices/detail/{id}", name="devices_detail")
+     * @Route ("/devices/detail/{id}/{origin}", name="devices_detail")
      */
-    public function detail(Device $device)
+    public function detail(Device $device, $origin)
     {
+        $sensors = $this->em->getRepository(Sensor::class)->findBy(array('parentDevice'=>$device));
+
+        $sensorIds = [];
+        foreach ($sensors as $sensor)
+        {
+            array_push($sensorIds, $sensor->getHardwareId());
+        }
+
+
         return $this->render('admin/devices/detail.html.twig',[
+            'device'=>$device,
+            'origin'=>$origin,
+            'sensors'=>$sensors,
+            'sensorIds'=>json_encode($sensorIds, JSON_UNESCAPED_UNICODE)
         ]);
     }
     /**
@@ -465,11 +478,10 @@ class DeviceController extends AbstractController
             {
                 throw new Exception("Sensor Id is missing.");
             }
-            if (!$_POST['sensorData'])
+            if (!$_POST['rawSensorData'])
             {
                 throw new Exception("Sensor data are missing.");
             }
-
             $sensorId = strval($_POST['sensorId']);
             $uniqueHash = strval($_POST['uniqueHash']);
             $rawSensorData = floatval($_POST['rawSensorData']);
@@ -479,6 +491,10 @@ class DeviceController extends AbstractController
             if (!$device)
             {
                 throw new Exception("No such device with a specified unique hash.");
+            }
+
+            if (!$device->getIsAllowed()){
+                throw new Exception("The device is not allowed yet. Please allow the device in the administration first.");
             }
 
             $sensor = $this->em->getRepository(Sensor::class)->findOneBy(array('hardwareId'=>$sensorId, 'parentDevice'=>$device));
@@ -499,6 +515,7 @@ class DeviceController extends AbstractController
             $this->em->persist($newSensorData);
             $this->em->flush();
 
+            return new Response('Success');
         }
         catch (Exception $exception)
         {
@@ -516,6 +533,11 @@ class DeviceController extends AbstractController
             if (!$_POST['uniqueHash'])
             {
                 throw new Exception("Unique hash is missing.");
+            }
+
+            if (!$_POST['macAddress'])
+            {
+                throw new Exception("MAC address is missing.");
             }
 
             $uniqueHash = strval($_POST['uniqueHash']);
@@ -537,6 +559,7 @@ class DeviceController extends AbstractController
             $this->em->persist($device);
             $this->em->flush();
 
+            return new Response('Success');
         }
         catch (Exception $exception)
         {

@@ -1,6 +1,6 @@
 import requests, time, os, json
 
-from functions import loadSensors, saveTemperatures
+from functions import loadSensors, saveTemperatures, touchServer
 
 uniqueHash = None
 writeUrl = None
@@ -20,6 +20,14 @@ try:
         uniqueHash = configData['uniqueHash']
     else:
         raise ValueError("Unique hash is missing in config file.")
+
+    if 'touchUrl' in configData.keys():
+        touchUrl = configData['touchUrl']
+    else:
+        raise ValueError("Unique hash is missing in config file.")
+
+    touchServer(uniqueHash, touchUrl)
+
 
     saveTemperatures(sensors, writeUrl, uniqueHash)
 

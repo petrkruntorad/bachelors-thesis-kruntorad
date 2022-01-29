@@ -5,12 +5,12 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1>Flot Charts</h1>
+                <h1>Zařízení: {{ device.name }}</h1>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="#">Home</a></li>
-                    <li class="breadcrumb-item active">Flot</li>
+                    <li class="breadcrumb-item"><a href="{{ path(origin) }}">Zařízení</a></li>
+                    <li class="breadcrumb-item active">Detail zařízení: {{ device.name }}</li>
                 </ol>
             </div>
         </div>
@@ -21,46 +21,33 @@
 <section class="content">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-6">
-                <!-- interactive chart -->
-                <div class="card card-primary card-outline">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="far fa-chart-bar"></i>
-                            Interactive Area Chart
-                        </h3>
+            {% if sensors is defined and sensors is not empty %}
+                {% for sensor in sensors %}
+                    <div class="col-6">
+                        <!-- interactive chart -->
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="far fa-chart-bar"></i>
+                                    Senzor: {{ sensor.hardwareId }}
+                                </h3>
 
-                        <div class="card-tools">
-                            Real time
+                                <div class="card-tools">
+                                   <a href="" class="text-danger" title="Odebrat senzor">
+                                       <i class="fa-fw fas fa-trash"></i>
+                                   </a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="{{ sensor.hardwareId }}" style="height: 300px;"></div>
+                            </div>
+                            <!-- /.card-body-->
                         </div>
+                        <!-- /.card -->
                     </div>
-                    <div class="card-body">
-                        <div id="test1" style="height: 300px;"></div>
-                    </div>
-                    <!-- /.card-body-->
-                </div>
-                <!-- /.card -->
-
-            </div>
-            <!-- /.col -->
-            <div class="col-6">
-                <!-- interactive chart -->
-                <div class="card card-primary card-outline">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="far fa-chart-bar"></i>
-                            Interactive Area Chart
-                        </h3>
-                    </div>
-                    <div class="card-body">
-                        <div id="test2" style="height: 300px;"></div>
-                    </div>
-                    <!-- /.card-body-->
-                </div>
-                <!-- /.card -->
-
-            </div>
-            <!-- /.col -->
+                    <!-- /.col -->
+                {% endfor %}
+            {% endif %}
         </div>
         <!-- /.row -->
     </div><!-- /.container-fluid -->
@@ -136,7 +123,7 @@
 
                 return res
             }
-            const chartIds = ['test1','test2'];
+            const chartIds = {{ sensorIds|striptags|raw|nl2br }};
             chartIds.forEach(device=>{
                 var interactive_plot = $.plot('#'+device+'', [
                         {
