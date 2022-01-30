@@ -85,49 +85,82 @@
     <!-- Page specific script -->
     <script>
         $(function () {
-            /*
-             * Flot Interactive Chart
-             * -----------------------
-             */
-            // We use an inline data source in the example, usually data would
-            // be fetched from a server
-            var data        = [],
-                totalPoints = 100
+            var totalPoints = 90;
+            var pushvalue = 0;
+            var sensorData = []
 
-            function getRandomData() {
+            function getData(sensorId) {
+                var temperatures = [];
+                var getDataUrl = "{{ path('sensor_getData',{'id':device.id, 'hardwareId': '_hardwareId_'}) }}/"+pushvalue;
+                getDataUrl = getDataUrl.replace("_hardwareId_", sensorId);
+                console.log(getDataUrl)
+                $.ajax({
+                    method: "GET",
+                    url: getDataUrl,
+                    dataType: "json",
+                    async: false,
 
-                if (data.length > 0) {
-                    data = data.slice(1)
-                }
+                    success: function(data) {
+                        writeTime = data.WriteTime;
+                        temperatures = data.temperatures;
 
-                // Do a random walk
-                while (data.length < totalPoints) {
+                    }
+                });
+                if(pushvalue === 0){
+                    var pi = 0;
+                    while (sensorData.length < totalPoints) {
+                        var prev = sensorData.length > 0 ? sensorData[sensorData.length - 1] : 50,
+                            y = temperatures[pi];
 
-                    var prev = data.length > 0 ? data[data.length - 1] : 50,
-                        y    = prev + Math.random() * 10 - 5
 
-                    if (y < 0) {
-                        y = 0
-                    } else if (y > 100) {
-                        y = 100
+                        pi = pi+1;
+                        sensorData.push(y);
+                    }
+                    // Zip the generated y values with the x values
+                    var res = [];
+
+
+                    for (var i = 0; i < sensorData.length; ++i) {
+
+                        if (sensorData[i]){
+                            res.push([i, sensorData[i]])
+                        }else {
+                            res.push([i, 0])
+                        }
+
                     }
 
-                    data.push(y)
+                    return res;
+                }else{
+
+                    while (sensorData.length < totalPoints) {
+                        var prev = sensorData.length > 0 ? sensorData[sensorData.length - 1] : 50,
+                            y = temperatures;
+
+                        sensorData.push(y);
+                    }
+                    // Zip the generated y values with the x values
+                    var res = [];
+                    for (var i = 0; i < sensorData.length; ++i) {
+                        if (sensorData[i]){
+                            res.push([i, sensorData[i]])
+                        }else {
+                            res.push([i, 0])
+                        }
+
+                    }
+
+                    return res;
                 }
 
-                // Zip the generated y values with the x values
-                var res = []
-                for (var i = 0; i < data.length; ++i) {
-                    res.push([i, data[i]])
-                }
-
-                return res
             }
             const chartIds = {{ sensorIds|striptags|raw|nl2br }};
             chartIds.forEach(device=>{
+                pushvalue[device] = 0;
+                sensorData[device] = []
                 var interactive_plot = $.plot('#'+device+'', [
                         {
-                            data: getRandomData(),
+                            data: getData(device),
                         }
                     ],
                     {
@@ -163,14 +196,18 @@
                     }
                 )
 
-                var updateInterval = 500 //Fetch data ever x milliseconds
+                var updateInterval = 60000 //Fetch data ever x milliseconds
                 var realtime       = 'on' //If == to on then fetch data every x seconds. else stop fetching
                 function update() {
-
-                    interactive_plot.setData([getRandomData()])
+                    interactive_plot.setData([getData(device)])
 
                     // Since the axes don't change, we don't need to call plot.setupGrid()
                     interactive_plot.draw()
+
+                    if (chartIds.at(-1) === device)
+                    {
+                        pushvalue = pushvalue + 1;
+                    }
                     if (realtime === 'on') {
                         setTimeout(update, updateInterval)
                     }

@@ -1,8 +1,11 @@
 import os, time, requests, re
 
+from crontab import CronTab
+
 # variables
 sensors = []
 temperature = None
+
 
 def getMainNetworkInterfaceMacAdress():
     cmdipa = os.popen('ip a | grep link/ether').read()

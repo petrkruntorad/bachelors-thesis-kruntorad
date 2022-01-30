@@ -583,7 +583,7 @@ class DeviceController extends AbstractController
         $fileContent['touchUrl'] = $this->generateUrl('device_touch', array(), UrlGeneratorInterface::ABSOLUTE_URL);
 
         try {
-            $files = array("main.py", "functions.py", "init.py");
+            $files = array("main.py", "functions.py", "init.py", "testCron.py");
 
             $zip = new \ZipArchive();
 
