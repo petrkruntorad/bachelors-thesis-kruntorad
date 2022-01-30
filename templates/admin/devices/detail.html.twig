@@ -89,74 +89,8 @@
             var pushvalue = 0;
             var sensorData = []
 
-            function getData(sensorId) {
-                var temperatures = [];
-                var getDataUrl = "{{ path('sensor_getData',{'id':device.id, 'hardwareId': '_hardwareId_'}) }}/"+pushvalue;
-                getDataUrl = getDataUrl.replace("_hardwareId_", sensorId);
-                console.log(getDataUrl)
-                $.ajax({
-                    method: "GET",
-                    url: getDataUrl,
-                    dataType: "json",
-                    async: false,
-
-                    success: function(data) {
-                        writeTime = data.WriteTime;
-                        temperatures = data.temperatures;
-
-                    }
-                });
-                if(pushvalue === 0){
-                    var pi = 0;
-                    while (sensorData.length < totalPoints) {
-                        var prev = sensorData.length > 0 ? sensorData[sensorData.length - 1] : 50,
-                            y = temperatures[pi];
-
-
-                        pi = pi+1;
-                        sensorData.push(y);
-                    }
-                    // Zip the generated y values with the x values
-                    var res = [];
-
-
-                    for (var i = 0; i < sensorData.length; ++i) {
-
-                        if (sensorData[i]){
-                            res.push([i, sensorData[i]])
-                        }else {
-                            res.push([i, 0])
-                        }
-
-                    }
-
-                    return res;
-                }else{
-
-                    while (sensorData.length < totalPoints) {
-                        var prev = sensorData.length > 0 ? sensorData[sensorData.length - 1] : 50,
-                            y = temperatures;
-
-                        sensorData.push(y);
-                    }
-                    // Zip the generated y values with the x values
-                    var res = [];
-                    for (var i = 0; i < sensorData.length; ++i) {
-                        if (sensorData[i]){
-                            res.push([i, sensorData[i]])
-                        }else {
-                            res.push([i, 0])
-                        }
-
-                    }
-
-                    return res;
-                }
-
-            }
             const chartIds = {{ sensorIds|striptags|raw|nl2br }};
             chartIds.forEach(device=>{
-                pushvalue[device] = 0;
                 sensorData[device] = []
                 var interactive_plot = $.plot('#'+device+'', [
                         {
@@ -196,10 +130,13 @@
                     }
                 )
 
-                var updateInterval = 60000 //Fetch data ever x milliseconds
+                var updateInterval = 30000 //Fetch data ever x milliseconds
                 var realtime       = 'on' //If == to on then fetch data every x seconds. else stop fetching
                 function update() {
-                    interactive_plot.setData([getData(device)])
+                    if (pushvalue !== 0)
+                    {
+                        interactive_plot.setData([getData(device)])
+                    }
 
                     // Since the axes don't change, we don't need to call plot.setupGrid()
                     interactive_plot.draw()
@@ -216,41 +153,6 @@
                 //INITIALIZE REALTIME DATA FETCHING
                 if (realtime === 'on') {
                     update()
-                }
-                //REALTIME TOGGLE
-                $('#'+device+' .btn').click(function () {
-                    if ($(this).data('toggle') === 'on') {
-                        realtime = 'on'
-                    }
-                    else {
-                        realtime = 'off'
-                    }
-                    update()
-                })
-                /*
-                 * END INTERACTIVE CHART
-                 */
-
-
-                /*
-                 * LINE CHART
-                 * ----------
-                 */
-                //LINE randomly generated data
-
-                var sin = [],
-                    cos = []
-                for (var i = 0; i < 14; i += 0.5) {
-                    sin.push([i, Math.sin(i)])
-                    cos.push([i, Math.cos(i)])
-                }
-                var line_data1 = {
-                    data : sin,
-                    color: '#3c8dbc'
-                }
-                var line_data2 = {
-                    data : cos,
-                    color: '#00c0ef'
                 }
                 $("#"+device+"").bind("plothover", function (event, pos, item) {
                     if (item) {
@@ -271,6 +173,76 @@
                     }
                 });
             })
+
+            function getData(sensorId) {
+                var sensorDataLength = 0;
+                var getDataUrl = "{{ path('sensor_getData',{'id':device.id, 'hardwareId': '_hardwareId_'}) }}/"+pushvalue;
+                getDataUrl = getDataUrl.replace("_hardwareId_", sensorId);
+                console.log(getDataUrl)
+                $.ajax({
+                    method: "GET",
+                    url: getDataUrl,
+                    dataType: "json",
+                    async: false,
+
+                    success: function(data) {
+                        temperatures = data.temperatures;
+                    }
+                });
+                sensorDataLength = sensorData[sensorId].length - 1
+                var res = [];
+                if(pushvalue === 0){
+                    var pi = 0;
+
+                    while (sensorData[sensorId].length < totalPoints) {
+                        var prev = sensorData[sensorId].length > 0 ? sensorData[sensorDataLength] : 50,
+                            y = temperatures[pi];
+
+
+                        pi = pi+1;
+
+                        sensorData[sensorId].push(y);
+                    }
+                    // Zip the generated y values with the x values
+
+
+                    for (var i = 0; i < sensorData[sensorId].length; ++i) {
+
+                        if (sensorData[sensorId][i]){
+                            res.push([i, sensorData[sensorId][i]])
+                        }else {
+                            res.push([i, 0])
+                        }
+
+                    }
+                    return res;
+                }else{
+
+
+                    if (sensorData[sensorId].length > 0)
+                        sensorData[sensorId] = sensorData[sensorId].slice(1);
+
+                    sensorDataLength = sensorData[sensorId].length - 1
+                    
+                    while (sensorData[sensorId].length < totalPoints) {
+                        var prev = sensorData[sensorId].length > 0 ? sensorData[sensorId][sensorDataLength] : 50, y = temperatures;
+                        sensorData[sensorId].push(y);
+                    }
+                    // Zip the generated y values with the x values
+                    for (var i = 0; i < sensorData[sensorId].length; ++i) {
+
+                        if (sensorData[sensorId][i]){
+                            res.push([i, sensorData[sensorId][i]])
+                        }else {
+                            res.push([i, 0])
+                        }
+
+                    }
+                    console.log(res)
+                    return res;
+                }
+
+            }
         })
 
         function showTooltip(x, y, contents) {
