@@ -217,13 +217,11 @@
                     }
                     return res;
                 }else{
-
-
                     if (sensorData[sensorId].length > 0)
                         sensorData[sensorId] = sensorData[sensorId].slice(1);
 
                     sensorDataLength = sensorData[sensorId].length - 1
-                    
+
                     while (sensorData[sensorId].length < totalPoints) {
                         var prev = sensorData[sensorId].length > 0 ? sensorData[sensorId][sensorDataLength] : 50, y = temperatures;
                         sensorData[sensorId].push(y);

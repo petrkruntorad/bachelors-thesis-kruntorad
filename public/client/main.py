@@ -1,9 +1,11 @@
-import requests, time, os, json
-
-from functions import loadSensors, saveTemperatures, touchServer
+import requests, time, os, json, logging
+from functions import loadSensors, saveTemperatures, touchServer, updateConfig
+logging.basicConfig(filename='log.txt', encoding='utf-8', level=logging.ERROR)
 
 uniqueHash = None
 writeUrl = None
+touchUrl = None
+updateUrl = None
 sensors = loadSensors()
 
 try:
@@ -26,8 +28,13 @@ try:
     else:
         raise ValueError("Unique hash is missing in config file.")
 
-    touchServer(uniqueHash, touchUrl)
+    if 'updateUrl' in configData.keys():
+        updateUrl = configData['updateUrl']
+    else:
+        raise ValueError("Unique hash is missing in config file.")
 
+    touchServer(uniqueHash, touchUrl)
+    updateConfig(uniqueHash, updateUrl, configData)
 
     saveTemperatures(sensors, writeUrl, uniqueHash)
 
@@ -40,4 +47,4 @@ try:
     #    allmacaddress.append(mac[5])
 
 except FileNotFoundError as exception:
-    print("Config file not found: " + str(exception))
+    logging.error("Internal error: " + str(exception))

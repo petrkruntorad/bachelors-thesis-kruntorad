@@ -568,19 +568,49 @@ class DeviceController extends AbstractController
     }
 
     /**
+     * @Route ("/device/get-updates", name="device_getUpdates")
+     * @throws Exception
+     */
+    public function getUpdates()
+    {
+        try {
+            if (!$_POST['uniqueHash'])
+            {
+                throw new Exception("Unique hash is missing.");
+            }
+            $uniqueHash = strval($_POST['uniqueHash']);
+            $device = $this->em->getRepository(Device::class)->findOneBy(array('uniqueHash'=>$uniqueHash));
+
+            if (!$device)
+            {
+                throw new Exception("No such device with a specified unique hash.");
+            }
+
+            $fileContent = [];
+
+            $response = new Response($this->ds->generateConfigFile($device));
+
+            $disposition = HeaderUtils::makeDisposition(
+                HeaderUtils::DISPOSITION_ATTACHMENT,
+                'config.json'
+            );
+
+            $response->headers->set('Content-Disposition', $disposition);
+
+            return $response;
+        }
+        catch (Exception $exception)
+        {
+            throw new Exception("Something went wrong: ".$exception);
+        }
+    }
+
+    /**
      * @Route ("/devices/get_config/{id}", name="devices_get_config")
      */
     public function get_config(Device $device)
     {
-        $fileContent = [];
 
-        $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device));
-
-        $fileContent['uniqueHash'] = $device->getUniqueHash();
-        $fileContent['writeInterval'] = $deviceOptions->getWriteInterval();
-        $fileContent['writeUrl'] = $this->generateUrl('device_write_data', array(), UrlGeneratorInterface::ABSOLUTE_URL);
-        $fileContent['updateUrl'] = $this->generateUrl('device_write_data', array(), UrlGeneratorInterface::ABSOLUTE_URL);
-        $fileContent['touchUrl'] = $this->generateUrl('device_touch', array(), UrlGeneratorInterface::ABSOLUTE_URL);
 
         try {
             $files = array("main.py", "functions.py", "init.py", "testCron.py");
@@ -591,7 +621,7 @@ class DeviceController extends AbstractController
 
             $zip->open($filename,  \ZipArchive::CREATE);
 
-            $zip->addFromString("config.json", json_encode($fileContent, JSON_UNESCAPED_UNICODE));
+            $zip->addFromString("config.json", $this->ds->generateConfigFile($device));
             foreach ($files as $file) {
                 $zip->addFile($this->getParameter('client_folder').'/'.basename($file), $file);
             }
