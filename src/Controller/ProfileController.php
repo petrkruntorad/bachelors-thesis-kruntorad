@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use Exception;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -31,6 +32,7 @@ class ProfileController extends AbstractController
     }
     /**
      * @Route ("/profile/update/{id}", name="profile_update")
+     * @IsGranted("ROLE_USER")
      */
     public function update(Request $request, User $user)
     {
@@ -123,6 +125,7 @@ class ProfileController extends AbstractController
 
     /**
      * @Route ("/profile/password-change/{id}", name="profile_password_change")
+     * @IsGranted("ROLE_USER")
      */
     public function password_change(Request $request, UserPasswordHasherInterface $passwordHasher, User $user)
     {

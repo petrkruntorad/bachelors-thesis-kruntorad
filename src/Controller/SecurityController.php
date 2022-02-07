@@ -43,7 +43,7 @@ class SecurityController extends AbstractController
             return $this->redirectToRoute('register');
         }
         $error = $authenticationUtils->getLastAuthenticationError();
-
+        dump($error);
         return $this->render('security/login.html.twig', [
             'error'=> $error,
         ]);

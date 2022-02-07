@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Services\DeviceService;
 use Doctrine\ORM\EntityManagerInterface;
 use SebastianBergmann\CodeCoverage\Report\Text;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -50,6 +51,7 @@ class DeviceController extends AbstractController
 
     /**
      * @Route ("/devices", name="devices_index")
+     * @IsGranted("ROLE_USER")
      */
     public function index()
     {
@@ -62,6 +64,7 @@ class DeviceController extends AbstractController
 
     /**
      * @Route ("/devices/wating", name="devices_waiting")
+     * @IsGranted("ROLE_USER")
      */
     public function waiting()
     {
@@ -74,6 +77,7 @@ class DeviceController extends AbstractController
 
     /**
      * @Route ("/devices/not-activated", name="devices_not_activated")
+     * @IsGranted("ROLE_USER")
      */
     public function not_activated()
     {
@@ -86,6 +90,7 @@ class DeviceController extends AbstractController
 
     /**
      * @Route ("/devices/detail/{id}/{origin}", name="devices_detail")
+     * @IsGranted("ROLE_USER")
      */
     public function detail(Device $device, $origin)
     {
@@ -107,6 +112,7 @@ class DeviceController extends AbstractController
     }
     /**
      * @Route ("/devices/create/{origin}", name="devices_create")
+     * @IsGranted("ROLE_ADMIN")
      */
     public function create(Request $request, $origin){
 
@@ -184,6 +190,7 @@ class DeviceController extends AbstractController
 
     /**
      * @Route ("/devices/update/{id}/{origin}", name="devices_update")
+     * @IsGranted("ROLE_ADMIN")
      */
     public function update(Request $request, Device $device, $origin){
 
@@ -264,6 +271,7 @@ class DeviceController extends AbstractController
 
     /**
      * @Route ("/devices/{id}/settings/{origin}", name="devices_settings")
+     * @IsGranted("ROLE_ADMIN")
      */
     public function settings(Device $device,Request $request, $origin)
     {
@@ -380,6 +388,7 @@ class DeviceController extends AbstractController
 
     /**
      * @Route ("/devices/remove/{id}/{origin}", name="devices_remove")
+     * @IsGranted("ROLE_ADMIN")
      */
     public function remove(Device $device, $origin)
     {
@@ -390,6 +399,26 @@ class DeviceController extends AbstractController
             {
                 $this->em->remove($deviceOptions);
                 $this->em->flush();
+            }
+
+            $sensors = $this->em->getRepository(Sensor::class)->findBy(array('parentDevice'=>$device));
+            if ($sensors)
+            {
+                foreach ($sensors as $sensor)
+                {
+                    $sensorData = $this->em->getRepository(SensorData::class)->findBy(array('parentSensor'=>$sensor));
+                    if ($sensorData)
+                    {
+                        foreach ($sensorData as $data)
+                        {
+                            $this->em->remove($data);
+                            $this->em->flush();
+                        }
+                    }
+                    $this->em->remove($sensor);
+                    $this->em->flush();
+                }
+
             }
 
             $this->em->remove($device);
@@ -413,6 +442,7 @@ class DeviceController extends AbstractController
 
     /**
      * @Route ("/device/activate/{id}/{origin}", name="device_activate")
+     * @IsGranted("ROLE_ADMIN")
      * @throws Exception
      */
     public function activate(Device $device, $origin)
@@ -439,6 +469,7 @@ class DeviceController extends AbstractController
 
     /**
      * @Route ("/device/deactivate/{id}/{origin}", name="device_deactivate")
+     * @IsGranted("ROLE_ADMIN")
      * @throws Exception
      */
     public function deactivate(Device $device, $origin)
@@ -607,6 +638,7 @@ class DeviceController extends AbstractController
 
     /**
      * @Route ("/devices/get_config/{id}", name="devices_get_config")
+     * @throws Exception
      */
     public function get_config(Device $device)
     {

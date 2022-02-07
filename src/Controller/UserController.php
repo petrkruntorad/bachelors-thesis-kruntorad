@@ -2,10 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\DeviceOptions;
 use App\Entity\User;
 use Doctrine\Migrations\Exception\UnknownMigrationVersion;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -19,6 +21,9 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
+/**
+ * @IsGranted("ROLE_ADMIN")
+ */
 class UserController extends AbstractController
 {
 
@@ -253,6 +258,15 @@ class UserController extends AbstractController
         try {
             if ($user->getId() != $this->getUser()->getId())
             {
+                $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findBy(array('notificationsTargetUser'=>$user));
+                foreach ($deviceOptions as $singleDeviceOptions)
+                {
+                    $singleDeviceOptions->setNotificationsStatus(0);
+                    $singleDeviceOptions->setNotificationsTargetUser(NULL);
+                    $this->em->persist($singleDeviceOptions);
+                }
+                $this->em->flush();
+
                 $this->em->remove($user);
                 $this->em->flush();
 

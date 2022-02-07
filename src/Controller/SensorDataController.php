@@ -6,6 +6,7 @@ use App\Entity\Device;
 use App\Entity\Sensor;
 use App\Entity\SensorData;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -28,6 +29,7 @@ class SensorDataController extends AbstractController
 
     /**
      * @Route("/device/sensor/get-data/{id}/{hardwareId}/{push}", name="sensor_getData")
+     * @IsGranted("ROLE_USER")
      */
     public function getData(Device $device, string $hardwareId, $push=0){
         $data = [];
