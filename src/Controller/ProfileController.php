@@ -61,21 +61,6 @@ class ProfileController extends AbstractController
                     'autocomplete'=>'username'
                 ]
             ])
-            ->add('roles', ChoiceType::class, [
-                'label'=>'Role',
-                'multiple'=>true,
-                'attr'=>[
-                    'class'=>'select2',
-                    'data-placeholder'=>"Vyberte roli",
-                    'style'=>"width: 100%;",
-
-                ],
-                'choices'=> array(
-                    ''=>'',
-                    'Administrátor'=>'ROLE_ADMIN',
-                    'Uživatel'=>'ROLE_USER',
-                ),
-            ])
             ->add('save', SubmitType::class,[
                 'label'=>'Uložit',
                 'attr'=> [
@@ -90,16 +75,38 @@ class ProfileController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid()) {
             try {
+                $unique = true;
+                $email = $form->getData('email');
+                $username = $form->getData('username');
+                $existingUsers = $this->em->getRepository(User::class)->findBy(array('username'=>$username));
+                if(count($existingUsers)>0)
+                {
+                    foreach ($existingUsers as $existingUser){
+                        if($existingUser->getId() != $user->getId() && $existingUser->getEmail() == $email)
+                        {
+                            $unique = false;
+                        }
+                        if($existingUser->getId() != $user->getId() && $existingUser->getUserIdentifier() == $username)
+                        {
+                            $unique = false;
+                        }
+                    }
+                }
 
-                $this->em->persist($user);
-                $this->em->flush();
+                if($unique){
+                    $this->em->persist($user);
+                    $this->em->flush();
 
-                $this->addFlash(
-                    'good',
-                    'Údaje byly úspěšně uloženy.'
-                );
-
-                return $this->redirectToRoute('users_index');
+                    $this->addFlash(
+                        'good',
+                        'Údaje byly úspěšně uloženy.'
+                    );
+                }else{
+                    $this->addFlash(
+                        'bad',
+                        'Uživatelské jméno nebo heslo je zabrané.'
+                    );
+                }
             }
             catch (Exception $exception)
             {
