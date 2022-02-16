@@ -9,26 +9,101 @@
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="{{ path(origin) }}">Zařízení</a></li>
+                    <li class="breadcrumb-item"><a href="{{ path('device_activate', {'id':device.id, 'origin':app.request.attributes.get('_route')}) }}">Zařízení</a></li>
                     <li class="breadcrumb-item active">Detail zařízení: {{ device.name }}</li>
                 </ol>
             </div>
         </div>
+        {% if is_granted('ROLE_ADMIN') %}
+            <div class="row">
+                <div class="col-md-1 pt-1 text-right ml-auto">
+                    <a href="{{ path('devices_settings',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" class="btn btn-primary w-100" title="Nastavení">
+                        <i class="fa-fw fas fa-cog"></i>
+                    </a>
+                </div>
+                <div class="col-md-1 pt-1 text-right">
+                    <a href="{{ path('devices_update',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" title="Editovat zařízení" class="btn btn-primary w-100">
+                        <i class="fa-fw fas fa-pen"></i>
+                    </a>
+                </div>
+            </div>
+        {% endif %}
     </div><!-- /.container-fluid -->
 </section>
 
 <!-- Main content -->
 <section class="content">
     <div class="container-fluid">
-        <div class="row">
+        {% for message in app.flashes('good') %}
+            <div class="flash-notice pull-right col-xs-12 " style="padding:0;">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>{{ message|raw }}</strong>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('bad') %}
+            <div class="flash-notice pull-right col-xs-12 " style="padding:0;">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>{{ message|raw }}</strong>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+        <div class="row connectedSortable ui-sort">
+            <div class="col-6 d-flex">
+                <div class="card card-primary card-outline  w-100">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-fw fa-desktop"></i>
+                            Detail
+                        </h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <dl>
+                            <dt>MAC adresa:</dt>
+                            <dd>{{ device.macAddress }}</dd>
+                            <dt>Unikátní klíč:</dt>
+                            <dd>{{ device.uniqueHash }}</dd>
+                            <dt>Interval zápisu:</dt>
+                            <dd>
+                                {% if writeInterval is defined and writeInterval is not empty %}
+                                    {{ writeInterval.description }}
+                                {% endif %}
+                            </dd>
+                            <dt>Stav notifikací:</dt>
+                            <dd>
+                                {% if deviceOptions.notificationsStatus == 1 %}
+                                    Zapnuto
+                                {% else %}
+                                    Vypnuto
+                                {% endif %}
+                            </dd>
+                            {% if deviceOptions.notificationsStatus == 1 %}
+                                <dt>Odesílat notifikace uživateli:</dt>
+                                <dd>
+                                    {{ deviceOptions.notificationsTargetUser.username }}
+                                </dd>
+                            {% endif %}
+                        </dl>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+            </div>
             {% if sensors is defined and sensors is not empty %}
                 {% for sensor in sensors %}
                     <div class="col-6">
                         <!-- interactive chart -->
-                        <div class="card card-primary card-outline">
+                        <div class="card card-green card-outline">
                             <div class="card-header">
                                 <h3 class="card-title">
-                                    <i class="far fa-chart-bar"></i>
+                                    <i class="far fa-fw fa-chart-bar"></i>
                                     Senzor: {{ sensor.hardwareId }}
                                 </h3>
 
@@ -119,10 +194,11 @@
                             },
                         },
                         yaxis: {
-                            min: 0,
-                            max: 120,
                             show: true,
-                            ticks: 10,
+                            options: {
+                                autoScale: "exact"
+                            }
+
                         },
                         xaxis: {
                             show: true
@@ -130,15 +206,14 @@
                     }
                 )
 
-                var updateInterval = 30000 //Fetch data ever x milliseconds
+                var updateInterval = {{ writeInterval.secondsSteps*1000 }} //Fetch data ever x milliseconds
                 var realtime       = 'on' //If == to on then fetch data every x seconds. else stop fetching
                 function update() {
                     if (pushvalue !== 0)
                     {
                         interactive_plot.setData([getData(device)])
                     }
-
-                    // Since the axes don't change, we don't need to call plot.setupGrid()
+                    interactive_plot.setupGrid(true)
                     interactive_plot.draw()
 
                     if (chartIds.at(-1) === device)
@@ -187,6 +262,7 @@
 
                     success: function(data) {
                         temperatures = data.temperatures;
+                        console.log(data.message);
                     }
                 });
                 sensorDataLength = sensorData[sensorId].length - 1
@@ -236,7 +312,6 @@
                         }
 
                     }
-                    console.log(res)
                     return res;
                 }
 

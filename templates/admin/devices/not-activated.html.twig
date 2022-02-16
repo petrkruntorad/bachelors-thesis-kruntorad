@@ -69,12 +69,12 @@
                                 {% if devices is defined and devices is not empty %}
                                     {% for device in devices %}
                                         <tr>
+                                            <td>{{ device.id }}</td>
                                             <td>
                                                 <a href="{{ path('devices_detail',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" title="Detail zařízení">
-                                                    {{ device.id }}
+                                                    {{ device.name }}
                                                 </a>
                                             </td>
-                                            <td>{{ device.name }}</td>
                                             <td>
                                                 <a href="#" title="Stáhnout konfigurační soubory" class="m-1 text-info get-config" onclick="showModal('{{ url('devices_get_config',{'id':device.id})|e('js') }}');">
                                                     <i class="fa-fw fa fa-download" aria-hidden="true"></i>

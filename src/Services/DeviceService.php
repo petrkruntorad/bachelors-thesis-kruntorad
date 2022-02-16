@@ -20,6 +20,12 @@ class DeviceService
      */
     private $router;
 
+    private $writeIntervalSettings = [
+        ['description'=>'Každou minutu','cron'=>'* * * * *','secondsSteps'=>60],
+        ['description'=>'Každých 5 minut','cron'=>'*/5 * * * *','secondsSteps'=>300],
+        ['description'=>'Každých 15 minut','cron'=>'*/15 * * * *','secondsSteps'=>900],
+    ];
+
     public function __construct(
         EntityManagerInterface $em,
         UrlGeneratorInterface $router
@@ -43,4 +49,34 @@ class DeviceService
         return json_encode($fileContent, JSON_UNESCAPED_UNICODE);
     }
 
+    public function getWriteIntervals()
+    {
+        $writeIntervals = [];
+        if ($this->writeIntervalSettings)
+        {
+            foreach($this->writeIntervalSettings as $writeIntervalSetting)
+            {
+                $writeIntervals[$writeIntervalSetting['description']] = $writeIntervalSetting['cron'];
+            }
+        }
+        return $writeIntervals;
+    }
+
+    public function getWriteParametersForCron(string $cron)
+    {
+        $writeParameters = [];
+        if ($this->writeIntervalSettings)
+        {
+            foreach($this->writeIntervalSettings as $writeIntervalSetting)
+            {
+                if($writeIntervalSetting['cron'] == $cron)
+                {
+                    $writeParameters['description'] = $writeIntervalSetting['description'];
+                    $writeParameters['cron'] = $writeIntervalSetting['cron'];
+                    $writeParameters['secondsSteps'] = $writeIntervalSetting['secondsSteps'];
+                }
+            }
+        }
+        return $writeParameters;
+    }
 }

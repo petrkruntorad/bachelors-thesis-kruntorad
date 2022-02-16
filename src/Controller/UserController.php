@@ -40,7 +40,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route ("/users", name="users_index")
+     * @Route ("/admin/users", name="users_index")
      */
     public function index()
     {
@@ -52,7 +52,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route ("/users/create", name="user_create")
+     * @Route ("/admin/users/create", name="user_create")
      */
     public function create(Request $request, UserPasswordHasherInterface $passwordHasher)
     {
@@ -162,7 +162,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route ("/users/update/{id}", name="user_update")
+     * @Route ("/admin/users/update/{id}", name="user_update")
      */
     public function update(Request $request, UserPasswordHasherInterface $passwordHasher, User $user)
     {
@@ -251,7 +251,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route ("/users/remove/{id}", name="user_remove")
+     * @Route ("/admin/users/remove/{id}", name="user_remove")
      */
     public function remove(User $user)
     {

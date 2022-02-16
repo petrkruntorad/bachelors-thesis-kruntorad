@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Device;
+use App\Entity\DeviceOptions;
 use App\Entity\Sensor;
 use App\Entity\SensorData;
+use App\Services\DeviceService;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,11 +21,18 @@ class SensorDataController extends AbstractController
      */
     private $em;
 
+    /**
+    * @param DeviceService
+    */
+    private $ds;
+
     public function __construct(
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        DeviceService $ds
     )
     {
         $this->em = $em;
+        $this->ds = $ds;
     }
 
 
@@ -34,11 +43,25 @@ class SensorDataController extends AbstractController
     public function getData(Device $device, string $hardwareId, $push=0){
         $data = [];
 
+        $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device->getId()));
+
         $sensor = $this->em->getRepository(Sensor::class)->findOneBy(array('hardwareId'=>$hardwareId, 'parentDevice'=>$device->getId()));
         $sensorDataLenght = 0;
         $temperaturesArray=[];
         $defaultTemperature = 0;
-        $seconds = 60;
+
+        if($this->ds->getWriteParametersForCron($deviceOptions->getWriteInterval()))
+        {
+            $steps = $this->ds->getWriteParametersForCron($deviceOptions->getWriteInterval())['secondsSteps'];
+            $seconds = $steps;
+            $totalSeconds = $steps*90;
+        }else{
+            $steps = 60;
+            $seconds = $steps;
+            $totalSeconds = $steps*90;
+        }
+        //$seconds = 60;
+        $currentTimestamp = strtotime(date("Y-m-d H:i:s"));
 
         if ($push == 0){
             $sensorData = $this->em->getRepository(SensorData::class)->getNumberOfTemperatures($sensor->getId(),90);
@@ -52,60 +75,42 @@ class SensorDataController extends AbstractController
                     //check if write time is not null
                     if ($sensorData[$i]->getWriteTimestamp() != NULL){
                         $writeTime = strtotime($sensorData[$i]->getWriteTimestamp()->format('Y-m-d H:i:s'));
-                        $currentTimestamp = strtotime(date("Y-m-d H:i:s"));
                         $secondsFromWrite = $currentTimestamp - $writeTime;
-                        if ($seconds<=5400){
+                        if ($seconds<=$totalSeconds){
                             if($secondsFromWrite<=$seconds){
                                 $temperaturesArray[] = $sensorData[$i]->getSensorData();
                                 $i = $i+1;
                             }else{
                                 $temperaturesArray[] = 0;
                             }
-                            $seconds = $seconds + 60;
+                            $seconds = $seconds + $steps;
                         }else{
                             $i = 90;
                         }
-
                     }else{
                         $temperaturesArray[] = 0;
                     }
                 }
             }else{
-                //create a fake object
-                $fakeSensorData = new SensorData();
-                $fakeSensorData->setParentSensor($sensor);
-                $fakeSensorData->setSensorData(0);
-                $fakeSensorData->setWriteTimestamp(new \DateTime('1977-01-01'));
-                if($sensorDataLenght<90){
-                    $missingvalues = 89-$sensorDataLenght;
-                    for ($i=0; $i <= $missingvalues; $i++) {
-                        array_push($temperaturesArray, $fakeSensorData);
-                    }
-
-                }
-                for ($i = 0; $i <= 89;) {
-                    //check if write time is not null
-                    if ($sensorData[$i]->getWriteTimestamp() != NULL){
-                        $writeTime = strtotime($sensorData[$i]->getWriteTimestamp()->format('Y-m-d H:i:s'));
-                        $currentTimestamp = strtotime(date("Y-m-d H:i:s"));
-                        $secondsFromWrite = $currentTimestamp - $writeTime;
-                        //check if the value is not older than 90 minutes
-                        if ($seconds<=5400){
-                            if($secondsFromWrite<=$seconds){
-                                $temperaturesArray[] = $sensorData[$i]->getSensorData();
-                                $i++;
-                            }else{
-                                $temperaturesArray[] = 0;
+                $temperaturesInit = array_fill(0, 90, 0);
+                for($i = 0; $i <= count($temperaturesInit)-1;)
+                {
+                    $currentSecondsPosition = ($i+1) * $steps;
+                    foreach ($sensorData as $key => $row) {
+                        if ($row->getWriteTimestamp() != NULL){
+                            $writeTime = strtotime($row->getWriteTimestamp()->format('Y-m-d H:i:s'));
+                            $secondsFromWrite = $currentTimestamp - $writeTime;
+                            if ($secondsFromWrite <= $totalSeconds){
+                                if($currentSecondsPosition >= $secondsFromWrite){
+                                    $temperaturesInit[$i] = $row->getSensorData();
+                                    unset($sensorData[$key]);
+                                }
                             }
-                            $seconds = $seconds + 60;
-                        }else{
-                            $i = 90;
                         }
-
-                    }else{
-                        $temperaturesArray[] = 0;
                     }
+                    $i++;
                 }
+                $temperaturesArray = $temperaturesInit;
             }
             $data['temperatures'] = array_reverse($temperaturesArray);
         }else{
@@ -122,8 +127,8 @@ class SensorDataController extends AbstractController
                 $writeTime = strtotime($sensorData->getWriteTimestamp()->format('Y-m-d H:i:s'));
                 $currentTimestamp = strtotime(date("Y-m-d H:i:s"));
                 $secondsFromWrite = $currentTimestamp - $writeTime;
-                //check if the value is not older than 60 seconds
-                if ($secondsFromWrite <= 60) {
+                //check if the value is not older than specified amount of seconds
+                if ($secondsFromWrite <= $seconds) {
                     $defaultTemperature = $sensorData->getSensorData();
                 }
             }
@@ -138,5 +143,6 @@ class SensorDataController extends AbstractController
         $response->headers->set('Content-Type', 'application/json');
         //return the response
         return $response;
+
     }
 }

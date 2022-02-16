@@ -31,7 +31,7 @@ class ProfileController extends AbstractController
         $this->em = $em;
     }
     /**
-     * @Route ("/profile/update/{id}", name="profile_update")
+     * @Route ("/admin/profile/update/{id}", name="profile_update")
      * @IsGranted("ROLE_USER")
      */
     public function update(Request $request, User $user)
@@ -131,7 +131,7 @@ class ProfileController extends AbstractController
     }
 
     /**
-     * @Route ("/profile/password-change/{id}", name="profile_password_change")
+     * @Route ("/admin/profile/password-change/{id}", name="profile_password_change")
      * @IsGranted("ROLE_USER")
      */
     public function password_change(Request $request, UserPasswordHasherInterface $passwordHasher, User $user)

@@ -50,7 +50,7 @@ class DeviceController extends AbstractController
     }
 
     /**
-     * @Route ("/devices", name="devices_index")
+     * @Route ("/admin/devices", name="devices_index")
      * @IsGranted("ROLE_USER")
      */
     public function index()
@@ -63,7 +63,7 @@ class DeviceController extends AbstractController
     }
 
     /**
-     * @Route ("/devices/wating", name="devices_waiting")
+     * @Route ("/admin/devices/wating", name="devices_waiting")
      * @IsGranted("ROLE_USER")
      */
     public function waiting()
@@ -76,7 +76,7 @@ class DeviceController extends AbstractController
     }
 
     /**
-     * @Route ("/devices/not-activated", name="devices_not_activated")
+     * @Route ("/admin/devices/not-activated", name="devices_not_activated")
      * @IsGranted("ROLE_USER")
      */
     public function not_activated()
@@ -89,29 +89,45 @@ class DeviceController extends AbstractController
     }
 
     /**
-     * @Route ("/devices/detail/{id}/{origin}", name="devices_detail")
+     * @Route ("/admin/devices/detail/{id}/{origin}", name="devices_detail")
      * @IsGranted("ROLE_USER")
      */
     public function detail(Device $device, $origin)
     {
         $sensors = $this->em->getRepository(Sensor::class)->findBy(array('parentDevice'=>$device));
-
+        if(count($sensors)<1)
+        {
+            $this->addFlash(
+                'bad',
+                'Zařízení nemá přidružené senzory.'
+            );
+        }
         $sensorIds = [];
         foreach ($sensors as $sensor)
         {
             array_push($sensorIds, $sensor->getHardwareId());
         }
-
+        $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device));
+        if(!$deviceOptions)
+        {
+            $this->addFlash(
+                'bad',
+                'Zařízení nebylo prozatím nastaveno.'
+            );
+            return $this->redirectToRoute($origin);
+        }
 
         return $this->render('admin/devices/detail.html.twig',[
             'device'=>$device,
+            'deviceOptions'=>$deviceOptions,
+            'writeInterval'=>$this->ds->getWriteParametersForCron($deviceOptions->getWriteInterval()),
             'origin'=>$origin,
             'sensors'=>$sensors,
             'sensorIds'=>json_encode($sensorIds, JSON_UNESCAPED_UNICODE)
         ]);
     }
     /**
-     * @Route ("/devices/create/{origin}", name="devices_create")
+     * @Route ("/admin/devices/create/{origin}", name="devices_create")
      * @IsGranted("ROLE_ADMIN")
      */
     public function create(Request $request, $origin){
@@ -189,7 +205,7 @@ class DeviceController extends AbstractController
     }
 
     /**
-     * @Route ("/devices/update/{id}/{origin}", name="devices_update")
+     * @Route ("/admin/devices/update/{id}/{origin}", name="devices_update")
      * @IsGranted("ROLE_ADMIN")
      */
     public function update(Request $request, Device $device, $origin){
@@ -245,6 +261,10 @@ class DeviceController extends AbstractController
                     'Zařízení '.$device->getName().' bylo úspěšně upraveno.'
                 );
 
+                if($origin == 'devices_detail')
+                {
+                    return $this->redirectToRoute($origin, array('id'=>$device->getId(), 'origin'=>$origin));
+                }
                 return $this->redirectToRoute($origin);
             }
             catch (Exception $exception)
@@ -270,15 +290,12 @@ class DeviceController extends AbstractController
     }
 
     /**
-     * @Route ("/devices/{id}/settings/{origin}", name="devices_settings")
+     * @Route ("/admin/devices/{id}/settings/{origin}", name="devices_settings")
      * @IsGranted("ROLE_ADMIN")
      */
     public function settings(Device $device,Request $request, $origin)
     {
-
         $settings = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device));
-
-
 
         if (!$settings)
         {
@@ -333,14 +350,7 @@ class DeviceController extends AbstractController
                     'data-placeholder'=>'Interval zápisu notifikací',
                     'style'=>"width: 100%;",
                 ],
-                'choices' => [
-                    'Každou minutu' => '* * * * *',
-                    'Každých 5 minut' => '*/5 * * * *',
-                    'Každých 15 minut' => '*/15 * * * *',
-                    'Každou hodinu' => '0 */1 * * *',
-                    'Každých 12 hodin' => '0 */12 * * *',
-                    'Každý den o půlnoci' => '0 0 */1 * *',
-                ]
+                'choices' => $this->ds->getWriteIntervals()
             ])
             ->add('save', SubmitType::class,[
                 'label'=>'Uložit',
@@ -362,6 +372,10 @@ class DeviceController extends AbstractController
                     'Nastavení bylo úspěšně dokončeno'
                 );
 
+                if($origin == 'devices_detail')
+                {
+                    return $this->redirectToRoute($origin, array('id'=>$device->getId(), 'origin'=>$origin));
+                }
                 return $this->redirectToRoute($origin);
             }
             catch (Exception $exception)
@@ -387,7 +401,7 @@ class DeviceController extends AbstractController
     }
 
     /**
-     * @Route ("/devices/remove/{id}/{origin}", name="devices_remove")
+     * @Route ("/admin/devices/remove/{id}/{origin}", name="devices_remove")
      * @IsGranted("ROLE_ADMIN")
      */
     public function remove(Device $device, $origin)
@@ -441,7 +455,7 @@ class DeviceController extends AbstractController
     }
 
     /**
-     * @Route ("/device/activate/{id}/{origin}", name="device_activate")
+     * @Route ("/admin/device/activate/{id}/{origin}", name="device_activate")
      * @IsGranted("ROLE_ADMIN")
      * @throws Exception
      */
@@ -468,7 +482,7 @@ class DeviceController extends AbstractController
     }
 
     /**
-     * @Route ("/device/deactivate/{id}/{origin}", name="device_deactivate")
+     * @Route ("/admin/device/deactivate/{id}/{origin}", name="device_deactivate")
      * @IsGranted("ROLE_ADMIN")
      * @throws Exception
      */
