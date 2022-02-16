@@ -5,12 +5,11 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1 class="m-0">Dashboard v2</h1>
+                    <h1 class="m-0">Přehled</h1>
                 </div><!-- /.col -->
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active">Dashboard v2</li>
+                        <li class="breadcrumb-item active">Přehled</li>
                     </ol>
                 </div><!-- /.col -->
             </div><!-- /.row -->
@@ -21,15 +20,22 @@
     <!-- Main content -->
     <section class="content">
         <div class="container-fluid">
+            <h5 class="mb-2">Zařízení</h5>
             <!-- Info boxes -->
             <div class="row">
-                <div class="col-12 col-sm-6 col-md-3">
+                <div class="col-12 col-md-6 col-lg-3">
                     <div class="info-box">
-                        <span class="info-box-icon bg-info elevation-1"><i class="fas fa-check"></i></span>
+                        <span class="info-box-icon bg-info elevation-1">
+                            <i class="fas fa-fw fa-check">
+
+                            </i></span>
 
                         <div class="info-box-content">
-                            <span class="info-box-text"><a href="{{ path('devices_index') }}"
-                                                           title="Schválená zařízení">Schválená zařízení</a></span>
+                            <span class="info-box-text">
+                                <a href="{{ path('devices_index') }}" title="Schválená zařízení">
+                                    Schváleno
+                                </a>
+                            </span>
                             <span class="info-box-number">
                             {% if allowedDevices is defined and allowedDevices is not empty %}
                                 {{ allowedDevices|length }}
@@ -43,15 +49,15 @@
                     <!-- /.info-box -->
                 </div>
                 <!-- /.col -->
-                <div class="col-12 col-sm-6 col-md-3">
+                <div class="col-12 col-md-6 col-lg-3">
                     <div class="info-box mb-3">
                         <span class="info-box-icon bg-danger elevation-1">
-                            <i class="fas fa-hourglass"></i>
+                            <i class="fas fa-fw fa-hourglass"></i>
                         </span>
                         <div class="info-box-content">
                             <span class="info-box-text">
                                  <a href="{{ path('devices_waiting') }}">
-                                    Čekající na schválení
+                                    Neschváleno
                                 </a>
                             </span>
                             <span class="info-box-number">
@@ -71,10 +77,10 @@
                 <!-- fix for small devices only -->
                 <div class="clearfix hidden-md-up"></div>
 
-                <div class="col-12 col-sm-6 col-md-3">
+                <div class="col-12 col-md-6 col-lg-3">
                     <div class="info-box mb-3">
                         <span class="info-box-icon bg-success elevation-1">
-                            <i class="fas fa-times"></i>
+                            <i class="fas fa-fw fa-times"></i>
                         </span>
                         <div class="info-box-content">
                             <span class="info-box-text">
@@ -95,30 +101,38 @@
                     <!-- /.info-box -->
                 </div>
                 <!-- /.col -->
-                {% if is_granted("ROLE_ADMIN") %}
-                <div class="col-12 col-sm-6 col-md-3">
-                    <div class="info-box mb-3">
-                        <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-users"></i></span>
+            </div>
+            <!-- /.row -->
+            {% if is_granted("ROLE_ADMIN") %}
+            <h5 class="mb-2">Uživatelé</h5>
+            <div class="row">
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <div class="info-box mb-3">
+                        <span class="info-box-icon bg-warning elevation-1">
+                            <i class="fas fa-fw fa-users"></i>
+                        </span>
 
-                        <div class="info-box-content">
-                            <span class="info-box-text">Uživatelé</span>
-                            <span class="info-box-number">
+                            <div class="info-box-content">
+                                <span class="info-box-text">
+                                    <a href="{{ path('users_index') }}" title="Uživatelé">
+                                        Uživatelé
+                                    </a>
+                                </span>
+                                <span class="info-box-number">
                                 {% if users is defined and users is not empty %}
                                     {{ users|length }}
                                 {% else %}
                                     0
                                 {% endif %}
                             </span>
+                            </div>
+                            <!-- /.info-box-content -->
                         </div>
-                        <!-- /.info-box-content -->
+                        <!-- /.info-box -->
                     </div>
-                    <!-- /.info-box -->
-                </div>
-                <!-- /.col -->
-                {% endif %}
+                    <!-- /.col -->
             </div>
-            <!-- /.row -->
-
+            {% endif %}
         </div><!--/. container-fluid -->
     </section>
     <!-- /.content -->
