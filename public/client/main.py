@@ -34,6 +34,7 @@ try:
         raise ValueError("Unique hash is missing in config file.")
 
     touchServer(uniqueHash, touchUrl)
+
     updateConfig(uniqueHash, updateUrl, configData)
 
     saveTemperatures(sensors, writeUrl, uniqueHash)
