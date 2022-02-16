@@ -8,6 +8,7 @@ use App\Entity\Sensor;
 use App\Entity\SensorData;
 use App\Entity\User;
 use App\Services\DeviceService;
+use App\Services\SensorService;
 use Doctrine\ORM\EntityManagerInterface;
 use SebastianBergmann\CodeCoverage\Report\Text;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -36,17 +37,24 @@ class DeviceController extends AbstractController
     private $em;
 
     /**
-     * @param DeviceService
+     * @var DeviceService
      */
     private $ds;
 
+    /**
+     * @var SensorService $sensorService
+     */
+    private $sensorService;
+
     public function __construct(
         EntityManagerInterface $em,
-        DeviceService $ds
+        DeviceService $ds,
+        SensorService $sensorService
     )
     {
         $this->em = $em;
         $this->ds = $ds;
+        $this->sensorService = $sensorService;
     }
 
     /**
@@ -103,8 +111,12 @@ class DeviceController extends AbstractController
             );
         }
         $sensorIds = [];
-        foreach ($sensors as $sensor)
+        $sensorStates = [];
+        foreach ($sensors as $key => $sensor)
         {
+            $sensorStates[$key]['id'] = $sensor->getId();
+            $sensorStates[$key]['state'] = $this->sensorService->isSensorActive($sensor->getId());
+
             array_push($sensorIds, $sensor->getHardwareId());
         }
         $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device));
@@ -116,14 +128,14 @@ class DeviceController extends AbstractController
             );
             return $this->redirectToRoute($origin);
         }
-
         return $this->render('admin/devices/detail.html.twig',[
             'device'=>$device,
             'deviceOptions'=>$deviceOptions,
             'writeInterval'=>$this->ds->getWriteParametersForCron($deviceOptions->getWriteInterval()),
             'origin'=>$origin,
             'sensors'=>$sensors,
-            'sensorIds'=>json_encode($sensorIds, JSON_UNESCAPED_UNICODE)
+            'sensorIds'=>json_encode($sensorIds, JSON_UNESCAPED_UNICODE),
+            'sensorsState'=>$sensorStates,
         ]);
     }
     /**

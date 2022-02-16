@@ -19,14 +19,25 @@ class SensorDataRepository extends ServiceEntityRepository
         parent::__construct($registry, SensorData::class);
     }
 
-    public function getNumberOfTemperatures($sensorID,$limit){
+    public function getNumberOfTemperatures($sensorId,$limit){
         return $this->createQueryBuilder('sd')
             ->where('sd.parentSensor=:parentSensor')
-            ->setParameter('parentSensor',$sensorID)
+            ->setParameter('parentSensor',$sensorId)
             ->orderBy('sd.id','DESC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    public function getLastRecordForSensor(int $sensorId)
+    {
+        return $this->createQueryBuilder('sd')
+            ->where('sd.parentSensor=:parentSensor')
+            ->setParameter('parentSensor',$sensorId)
+            ->orderBy('sd.id','DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getResult()[0];
     }
 
     // /**

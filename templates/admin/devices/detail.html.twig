@@ -100,7 +100,19 @@
                 {% for sensor in sensors %}
                     <div class="col-6">
                         <!-- interactive chart -->
-                        <div class="card card-green card-outline">
+                        {% set state = 'card-warning' %}
+                        {% if sensorsState is defined and sensorsState is not empty %}
+                            {% for sensorState in sensorsState %}
+                                {% if sensorState.id == sensor.id %}
+                                    {% if sensorState.state == true %}
+                                        {% set state = 'card-green' %}
+                                    {% else %}
+                                        {% set state = 'card-danger' %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        <div class="card card-outline {{ state }}">
                             <div class="card-header">
                                 <h3 class="card-title">
                                     <i class="far fa-fw fa-chart-bar"></i>
@@ -108,7 +120,7 @@
                                 </h3>
 
                                 <div class="card-tools">
-                                   <a href="" class="text-danger" title="Odebrat senzor">
+                                   <a href="{{ path('sensor_remove',{'id':sensor.Id, 'origin': origin}) }}" class="text-danger" title="Odebrat senzor">
                                        <i class="fa-fw fas fa-trash"></i>
                                    </a>
                                 </div>
