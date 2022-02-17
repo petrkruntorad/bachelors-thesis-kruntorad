@@ -47,6 +47,11 @@ class Device
      */
     private $uniqueHash;
 
+    /**
+     * @ORM\Column (name="local_ip_address", type="string")
+     */
+    private $localIpAddress;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -147,5 +152,23 @@ class Device
     {
         $this->uniqueHash = $uniqueHash;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getLocalIpAddress()
+    {
+        return $this->localIpAddress;
+    }
+
+    /**
+     * @param mixed $localIpAddress
+     */
+    public function setLocalIpAddress($localIpAddress): void
+    {
+        $this->localIpAddress = $localIpAddress;
+    }
+
+
 
 }
