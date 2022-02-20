@@ -10,6 +10,19 @@
     padding: 3px 10px 3px 10px;
     line-height: 1.7;
 }
+
+.state {
+    text-align: center;
+    width: 100%;
+    border-radius: 25px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    opacity: 0.8;
+    cursor: pointer;
+    padding: 3px 10px 3px 10px;
+    line-height: 1.7;
+}
+
 .select2-container--default .select2-selection--multiple .select2-selection__choice {
     background-color: #007bff !important;
     border-color: #006fe6 !important;

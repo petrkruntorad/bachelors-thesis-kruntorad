@@ -23,9 +23,20 @@ class DeviceNotifications
     private $parentDevice;
 
     /**
-     * @ORM\Column(name="notfication_content", type="string", length=255, unique=true)
+     * @ORM\ManyToOne (targetEntity="App\Entity\Sensor")
+     * @ORM\JoinColumn(name="sensor_id", referencedColumnName="id", nullable=true)
      */
-    private $notification;
+    private $sensor;
+
+    /**
+     * @ORM\Column(name="notification_content", type="string", length=255)
+     */
+    private $notificationContent;
+
+    /**
+     * @ORM\Column(name="occurrence", type="datetime", options={"default": "CURRENT_TIMESTAMP"})
+     */
+    private $occurrence;
 
     /**
      * @ORM\Column(name="state", type="boolean")
@@ -56,17 +67,33 @@ class DeviceNotifications
     /**
      * @return mixed
      */
-    public function getNotification()
+    public function getSensor()
     {
-        return $this->notification;
+        return $this->sensor;
     }
 
     /**
-     * @param mixed $notification
+     * @param mixed $sensor
      */
-    public function setNotification($notification): void
+    public function setSensor($sensor): void
     {
-        $this->notification = $notification;
+        $this->sensor = $sensor;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getNotificationContent()
+    {
+        return $this->notificationContent;
+    }
+
+    /**
+     * @param mixed $notificationContent
+     */
+    public function setNotificationContent($notificationContent): void
+    {
+        $this->notificationContent = $notificationContent;
     }
 
     /**
@@ -83,6 +110,22 @@ class DeviceNotifications
     public function setState($state): void
     {
         $this->state = $state;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOccurrence()
+    {
+        return $this->occurrence;
+    }
+
+    /**
+     * @param mixed $occurrence
+     */
+    public function setOccurrence($occurrence): void
+    {
+        $this->occurrence = $occurrence;
     }
 
 }

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Entity\Device;
 use App\Entity\DeviceOptions;
 use App\Entity\Sensor;
 use App\Entity\SensorData;
@@ -55,5 +56,17 @@ class SensorService
         }
 
         return $status;
+    }
+
+    public function checkSensorsActivityForDevice(Device $device)
+    {
+        $sensors = $this->em->getRepository(Sensor::class)->findBy(array('parentDevice'=>$device));
+        foreach ($sensors as $sensor)
+        {
+            if($this->isSensorActive($sensor->getId()))
+            {
+                $active = true;
+            }
+        }
     }
 }

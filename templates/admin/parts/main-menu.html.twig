@@ -12,6 +12,15 @@
                     </p>
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="{{ path('notifications_index') }}" class="nav-link {% if app.request.get('_route') == 'notifications_index' %}active{% endif %}" title="Oznámení">
+                    <i class="nav-icon fas fa-bell"></i>
+                    <p>
+                        Oznámení
+                        <span class="right badge badge-danger">{{ notificationService.getNumberOfActiveNotifications }}</span>
+                    </p>
+                </a>
+            </li>
             <li class="nav-item  {% if app.request.get('_route') in ['devices_index','devices_waiting','devices_not_activated','devices_create'] %}menu-is-opening menu-open{% endif %}">
                 <a href="#" class="nav-link" title="Zařízení">
                     <i class="nav-icon fas fa-desktop"></i>
@@ -20,9 +29,9 @@
                         <i class="fas fa-angle-left right"></i>
                     </p>
                 </a>
-                <ul class="nav nav-treeview {% if app.request.get('_route') in ['devices_index','devices_waiting','devices_not_activated','devices_create', 'devices_settings'] %}d-block{% endif %}" style="display: none;">
+                <ul class="nav nav-treeview {% if app.request.get('_route') in ['devices_index','devices_waiting','devices_not_activated','devices_create', 'devices_settings', 'devices_detail'] %}d-block{% endif %}" style="display: none;">
                     <li class="nav-item">
-                        <a href="{{ path('devices_index') }}" class="nav-link {% if app.request.get('_route') in ['devices_index','devices_create'] %}active{% endif %}">
+                        <a href="{{ path('devices_index') }}" class="nav-link {% if app.request.get('_route') in ['devices_index','devices_create', 'devices_detail'] %}active{% endif %}">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Schválená</p>
                         </a>

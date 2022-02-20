@@ -8,12 +8,14 @@ use App\Entity\Sensor;
 use App\Entity\SensorData;
 use App\Entity\User;
 use App\Services\DeviceService;
+use App\Services\NotificationService;
 use App\Services\SensorService;
 use Doctrine\ORM\EntityManagerInterface;
 use SebastianBergmann\CodeCoverage\Report\Text;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\CssSelector\Exception\InternalErrorException;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -46,15 +48,27 @@ class DeviceController extends AbstractController
      */
     private $sensorService;
 
+    /**
+     * @var NotificationService $notificationService
+     */
+    private $notificationService;
+
+    /**
+     * @param EntityManagerInterface $em
+     * @param DeviceService $ds
+     * @param SensorService $sensorService
+     */
     public function __construct(
         EntityManagerInterface $em,
         DeviceService $ds,
-        SensorService $sensorService
+        SensorService $sensorService,
+        NotificationService $notificationService
     )
     {
         $this->em = $em;
         $this->ds = $ds;
         $this->sensorService = $sensorService;
+        $this->notificationService = $notificationService;
     }
 
     /**
@@ -63,10 +77,28 @@ class DeviceController extends AbstractController
      */
     public function index()
     {
+        dump(new \DateTime());
+        $devicesConfig = [];
         $devices = $this->em->getRepository(Device::class)->findBy(['isAllowed'=>1]);
+        try {
+            foreach ($devices as $key => $device)
+            {
+                if($this->ds->hasConfiguration($device))
+                {
+                    $devicesConfig[$key]['id'] = $device->getId();
+                    $devicesConfig[$key]['hasConfiguration'] = $this->ds->hasConfiguration($device);
+                }
+            }
+        }catch (InternalErrorException $exception){
+            $this->addFlash(
+                'bad',
+                'Nepodařilo se ověřit existenci konfigurace jednotlivých zařízení: '.$exception
+            );
+        }
 
         return $this->render('admin/devices/index.html.twig',[
             'devices'=>$devices,
+            'devicesConfig'=>$devicesConfig
         ]);
     }
 
@@ -76,10 +108,27 @@ class DeviceController extends AbstractController
      */
     public function waiting()
     {
+        $devicesConfig = [];
         $devices = $this->em->getRepository(Device::class)->getWaitingDevices();
+        try {
+            foreach ($devices as $key => $device)
+            {
+                if($this->ds->hasConfiguration($device))
+                {
+                    $devicesConfig[$key]['id'] = $device->getId();
+                    $devicesConfig[$key]['hasConfiguration'] = $this->ds->hasConfiguration($device);
+                }
+            }
+        }catch (InternalErrorException $exception){
+            $this->addFlash(
+                'bad',
+                'Nepodařilo se ověřit existenci konfigurace jednotlivých zařízení: '.$exception
+            );
+        }
 
         return $this->render('admin/devices/waiting.html.twig',[
             'devices'=>$devices,
+            'devicesConfig'=>$devicesConfig
         ]);
     }
 
@@ -89,16 +138,34 @@ class DeviceController extends AbstractController
      */
     public function not_activated()
     {
+        $devicesConfig = [];
         $devices = $this->em->getRepository(Device::class)->findBy(['firstConnection' => null, 'macAddress' => null]);
+        try {
+            foreach ($devices as $key => $device)
+            {
+                if($this->ds->hasConfiguration($device))
+                {
+                    $devicesConfig[$key]['id'] = $device->getId();
+                    $devicesConfig[$key]['hasConfiguration'] = $this->ds->hasConfiguration($device);
+                }
+            }
+        }catch (InternalErrorException $exception){
+            $this->addFlash(
+                'bad',
+                'Nepodařilo se ověřit existenci konfigurace jednotlivých zařízení: '.$exception
+            );
+        }
 
         return $this->render('admin/devices/not-activated.html.twig',[
             'devices'=>$devices,
+            'devicesConfig'=>$devicesConfig
         ]);
     }
 
     /**
      * @Route ("/admin/devices/detail/{id}/{origin}", name="devices_detail")
      * @IsGranted("ROLE_USER")
+     * @throws InternalErrorException
      */
     public function detail(Device $device, $origin)
     {
@@ -114,9 +181,13 @@ class DeviceController extends AbstractController
         $sensorStates = [];
         foreach ($sensors as $key => $sensor)
         {
+            if(!$this->sensorService->isSensorActive($sensor->getId()))
+            {
+                $content = 'Senzor ('.$sensor->getHardwareId().') není aktivní. Zkontrolujte jeho správné zapojení.';
+                $this->notificationService->createNotification($content, $sensor->getParentDevice(),$sensor);
+            }
             $sensorStates[$key]['id'] = $sensor->getId();
             $sensorStates[$key]['state'] = $this->sensorService->isSensorActive($sensor->getId());
-
             array_push($sensorIds, $sensor->getHardwareId());
         }
         $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device));
@@ -474,14 +545,21 @@ class DeviceController extends AbstractController
     public function activate(Device $device, $origin)
     {
         try {
-            $device->setIsAllowed(1);
-            $this->em->persist($device);
-            $this->em->flush();
+            if($this->ds->hasConfiguration($device)){
+                $device->setIsAllowed(1);
+                $this->em->persist($device);
+                $this->em->flush();
 
-            $this->addFlash(
-                'good',
-                'Zařízení bylo úšpěšně potvrzeno.'
-            );
+                $this->addFlash(
+                    'good',
+                    'Zařízení bylo úšpěšně potvrzeno.'
+                );
+            }else{
+                $this->addFlash(
+                    'bad',
+                    'Před schválením zařízení je nejprve potřeba dokončit konfiguraci.'
+                );
+            }
         }
         catch (Exception $exception)
         {
@@ -611,6 +689,7 @@ class DeviceController extends AbstractController
             {
                 $device->setFirstConnection(new \DateTime("now"));
             }
+            $device->setLastConnection(new \DateTime("now"));
             $device->setMacAddress($macAddress);
 
             $this->em->persist($device);

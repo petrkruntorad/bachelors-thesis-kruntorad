@@ -42,8 +42,13 @@ class SecurityController extends AbstractController
         if(count($users) === 0){
             return $this->redirectToRoute('register');
         }
+
+        if($this->isGranted('IS_AUTHENTICATED_FULLY'))
+        {
+            return $this->redirectToRoute('admin_homepage');
+        }
+
         $error = $authenticationUtils->getLastAuthenticationError();
-        dump($error);
         return $this->render('security/login.html.twig', [
             'error'=> $error,
         ]);

@@ -1,4 +1,5 @@
 {% extends 'base.html.twig' %}
+{% block title %}Zařízení | Neaktivní{% endblock %}
 {% block body %}
     <!-- Content Header (Page header) -->
     <section class="content-header">
@@ -63,6 +64,7 @@
                                     <th>#</th>
                                     <th>Název</th>
                                     <th>První připojení</th>
+                                    <th>Poslední aktivita</th>
                                     <th>MAC adresa</th>
                                     <th>Akce</th>
                                 </tr>
@@ -77,22 +79,42 @@
                                                     {{ device.name }}
                                                 </a>
                                             </td>
-                                            <td>{{ device.firstConnection|date("H:m:s d/m/Y") }}</td>
+                                            <td>{{ device.firstConnection|date("H:i:s d/m/Y") }}</td>
+                                            <td>
+                                                {% if device.lastConnection is defined and device.lastConnection is not empty %}
+                                                    {{ device.lastConnection|date("H:i:s d/m/Y") }}
+                                                {% else %}
+                                                    Dosud neaktivní
+                                                {% endif %}
+                                            </td>
                                             <td>{{ device.macAddress }}</td>
                                             <td>
-                                                <a href="#" title="Stáhnout konfigurační soubory" class="m-1 text-info get-config" onclick="showModal('{{ url('devices_get_config',{'id':device.id})|e('js') }}');">
-                                                    <i class="fa-fw fa fa-download" aria-hidden="true"></i>
-                                                </a>
-                                                <a href="{{ path('devices_update',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" title="Editovat zařízení" class="m-1">
+                                                {% if devicesConfig is defined and devicesConfig is not empty %}
+                                                    {% for deviceConfig in devicesConfig %}
+                                                        {% if deviceConfig.id == device.id %}
+                                                            <a href="#" title="Stáhnout konfigurační soubory"
+                                                               class="m-1 text-info get-config"
+                                                               onclick="showModal('{{ url('devices_get_config',{'id':device.id})|e('js') }}');">
+                                                                <i class="fa-fw fa fa-download" aria-hidden="true"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endif %}
+                                                <a href="{{ path('devices_update',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}"
+                                                   title="Editovat zařízení" class="m-1">
                                                     <i class="fa-fw fas fa-pen"></i>
                                                 </a>
-                                                <a href="{{ path('devices_settings',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" title="Nastavení" class="m-1">
+                                                <a href="{{ path('devices_settings',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}"
+                                                   title="Nastavení" class="m-1">
                                                     <i class="fa-fw fas fa-cog"></i>
                                                 </a>
-                                                <a href="{{ path('device_deactivate', {'id':device.id, 'origin':app.request.attributes.get('_route')}) }}" title="Zrušit potvrzení" class="m-1 text-danger">
+                                                <a href="{{ path('device_deactivate', {'id':device.id, 'origin':app.request.attributes.get('_route')}) }}"
+                                                   title="Zrušit potvrzení" class="m-1 text-danger">
                                                     <i class="fa-fw fas fa-times"></i>
                                                 </a>
-                                                <a href="{{ path('devices_remove',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}" title="Smazat zařízení" class="m-1 text-danger">
+                                                <a href="{{ path('devices_remove',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}"
+                                                   title="Smazat zařízení" class="m-1 text-danger"
+                                                   onclick="return confirm('Opravdu si přejete smazat toto zařízení se všemi senzory a daty? Tato operace je nevratná.')">
                                                     <i class="fa-fw fas fa-trash"></i>
                                                 </a>
                                             </td>
@@ -105,6 +127,7 @@
                                     <th>#</th>
                                     <th>Název</th>
                                     <th>První připojení</th>
+                                    <th>Poslední aktivita</th>
                                     <th>MAC adresa</th>
                                     <th>Akce</th>
                                 </tr>
@@ -149,9 +172,24 @@
     <script src="{{ asset('plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
     <script>
         $(function () {
+            var visible = [1, 2, 3, 4]
+            var fileTitle = "Schválená zařízení"
             $("#devices").DataTable({
                 "responsive": true, "lengthChange": false, "autoWidth": false,
-                "buttons": ["copy", "csv", "excel"]
+                "buttons": [{
+                    extend: 'excelHtml5',
+                    title: fileTitle,
+                    exportOptions: {
+                        columns: visible
+                    }
+                },
+                    {
+                        extend: 'pdfHtml5',
+                        title: fileTitle,
+                        exportOptions: {
+                            columns: visible
+                        }
+                    },]
             }).buttons().container().appendTo('#devices_wrapper .col-md-6:eq(0)');
         });
     </script>

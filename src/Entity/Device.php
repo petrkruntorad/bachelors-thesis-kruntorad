@@ -33,6 +33,11 @@ class Device
     private $firstConnection;
 
     /**
+     * @ORM\Column (name="last_connection", type="datetime", nullable=true)
+     */
+    private $lastConnection;
+
+    /**
      * @ORM\Column (name="is_allowed", type="boolean")
      */
     private $isAllowed;
@@ -48,7 +53,7 @@ class Device
     private $uniqueHash;
 
     /**
-     * @ORM\Column (name="local_ip_address", type="string")
+     * @ORM\Column (name="local_ip_address", type="string", nullable=true)
      */
     private $localIpAddress;
 
@@ -119,6 +124,22 @@ class Device
     public function setFirstConnection($firstConnection): void
     {
         $this->firstConnection = $firstConnection;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLastConnection()
+    {
+        return $this->lastConnection;
+    }
+
+    /**
+     * @param mixed $lastConnection
+     */
+    public function setLastConnection($lastConnection): void
+    {
+        $this->lastConnection = $lastConnection;
     }
 
     /**

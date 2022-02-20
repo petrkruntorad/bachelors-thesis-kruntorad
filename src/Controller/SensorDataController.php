@@ -44,10 +44,7 @@ class SensorDataController extends AbstractController
         $data = [];
 
         $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device->getId()));
-
         $sensor = $this->em->getRepository(Sensor::class)->findOneBy(array('hardwareId'=>$hardwareId, 'parentDevice'=>$device->getId()));
-        $sensorDataLenght = 0;
-        $temperaturesArray=[];
         $defaultTemperature = 0;
 
         if($this->ds->getWriteParametersForCron($deviceOptions->getWriteInterval()))
@@ -65,54 +62,27 @@ class SensorDataController extends AbstractController
 
         if ($push == 0){
             $sensorData = $this->em->getRepository(SensorData::class)->getNumberOfTemperatures($sensor->getId(),90);
-            //count of values in array
-            if (count($sensorData)>0){
-                $sensorDataLenght = count($sensorData)-1;
-            }
-            //check if minimal count of values in array is 89
-            if($sensorDataLenght>=89){
-                for ($i = 0; $i < 90;) {
-                    //check if write time is not null
-                    if ($sensorData[$i]->getWriteTimestamp() != NULL){
-                        $writeTime = strtotime($sensorData[$i]->getWriteTimestamp()->format('Y-m-d H:i:s'));
+
+            $temperaturesInit = array_fill(0, 90, 0);
+            for($i = 0; $i <= count($temperaturesInit)-1;)
+            {
+                $currentSecondsPosition = ($i+1) * $steps;
+                foreach ($sensorData as $key => $row) {
+                    if ($row->getWriteTimestamp() != NULL){
+                        $writeTime = strtotime($row->getWriteTimestamp()->format('Y-m-d H:i:s'));
                         $secondsFromWrite = $currentTimestamp - $writeTime;
-                        if ($seconds<=$totalSeconds){
-                            if($secondsFromWrite<=$seconds){
-                                $temperaturesArray[] = $sensorData[$i]->getSensorData();
-                                $i = $i+1;
-                            }else{
-                                $temperaturesArray[] = 0;
-                            }
-                            $seconds = $seconds + $steps;
-                        }else{
-                            $i = 90;
-                        }
-                    }else{
-                        $temperaturesArray[] = 0;
-                    }
-                }
-            }else{
-                $temperaturesInit = array_fill(0, 90, 0);
-                for($i = 0; $i <= count($temperaturesInit)-1;)
-                {
-                    $currentSecondsPosition = ($i+1) * $steps;
-                    foreach ($sensorData as $key => $row) {
-                        if ($row->getWriteTimestamp() != NULL){
-                            $writeTime = strtotime($row->getWriteTimestamp()->format('Y-m-d H:i:s'));
-                            $secondsFromWrite = $currentTimestamp - $writeTime;
-                            if ($secondsFromWrite <= $totalSeconds){
-                                if($currentSecondsPosition >= $secondsFromWrite){
-                                    $temperaturesInit[$i] = $row->getSensorData();
-                                    unset($sensorData[$key]);
-                                }
+                        if ($secondsFromWrite <= $totalSeconds){
+                            if($currentSecondsPosition >= $secondsFromWrite){
+                                $temperaturesInit[$i] = $row->getSensorData();
+                                unset($sensorData[$key]);
                             }
                         }
                     }
-                    $i++;
                 }
-                $temperaturesArray = $temperaturesInit;
+                $i++;
             }
-            $data['temperatures'] = array_reverse($temperaturesArray);
+
+            $data['temperatures'] = array_reverse($temperaturesInit);
         }else{
             $sensorData = $this->em->getRepository(SensorData::class)->findOneBy(array('parentSensor'=>$sensor->getId()),array('id'=>'DESC'));
             if(empty($sensorData)){

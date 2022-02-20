@@ -4,7 +4,12 @@ namespace App\Services;
 
 use App\Entity\Device;
 use App\Entity\DeviceOptions;
+use App\Entity\Sensor;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use phpDocumentor\Reflection\Types\Boolean;
+use Symfony\Component\CssSelector\Exception\InternalErrorException;
+use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Uid\Uuid;
 
@@ -20,6 +25,9 @@ class DeviceService
      */
     private $router;
 
+    /**
+     * @var array[] $writeIntervalSettings
+     */
     private $writeIntervalSettings = [
         ['description'=>'Každou minutu','cron'=>'* * * * *','secondsSteps'=>60],
         ['description'=>'Každých 5 minut','cron'=>'*/5 * * * *','secondsSteps'=>300],
@@ -78,5 +86,43 @@ class DeviceService
             }
         }
         return $writeParameters;
+    }
+
+    /**
+     * @throws InternalErrorException
+     */
+    public function isDeviceActive(Device $device, bool $sensorActivity = false)
+    {
+        $active = false;
+        try {
+            $sensors = $this->em->getRepository(Sensor::class)->findBy(array('parentDevice'=>$device));
+            foreach ($sensors as $sensor)
+            {
+                if($sensorActivity)
+                {
+                    $active = true;
+                }
+            }
+        }catch (Exception $exception){
+            throw new InternalErrorException($exception);
+        }
+        return $active;
+    }
+
+    /**
+     * @throws InternalErrorException
+     */
+    public function hasConfiguration(Device $device)
+    {
+        try {
+            $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device));
+            if($deviceOptions)
+            {
+                return true;
+            }
+        }catch (Exception $exception){
+            throw new InternalErrorException($exception);
+        }
+        return false;
     }
 }
