@@ -7,6 +7,8 @@ use App\Entity\DeviceOptions;
 use App\Entity\Sensor;
 use App\Entity\SensorData;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use Symfony\Component\CssSelector\Exception\InternalErrorException;
 
 class SensorService
 {
@@ -16,7 +18,7 @@ class SensorService
     private $em;
 
     /**
-     * @param DeviceService
+     * @var DeviceService
      */
     private $ds;
 
@@ -68,5 +70,26 @@ class SensorService
                 $active = true;
             }
         }
+    }
+
+    /**
+     * @throws InternalErrorException
+     */
+    public function isDeviceActive(Device $device)
+    {
+
+        try {
+            $sensors = $this->em->getRepository(Sensor::class)->findBy(array('parentDevice'=>$device));
+            foreach ($sensors as $sensor)
+            {
+                if($this->isSensorActive($sensor->getId()))
+                {
+                    return true;
+                }
+            }
+        }catch (Exception $exception){
+            throw new InternalErrorException($exception);
+        }
+        return false;
     }
 }

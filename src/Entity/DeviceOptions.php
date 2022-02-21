@@ -36,6 +36,11 @@ class DeviceOptions
     private $notificationsStatus;
 
     /**
+     * @ORM\Column(name="temperature_limit", type="integer", nullable=true)
+     */
+    private $temperatureLimit;
+
+    /**
      * @ORM\Column(name="write_interval", type="string")
      */
     private $writeInterval;
@@ -107,6 +112,22 @@ class DeviceOptions
     public function setWriteInterval($writeInterval): void
     {
         $this->writeInterval = $writeInterval;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTemperatureLimit()
+    {
+        return $this->temperatureLimit;
+    }
+
+    /**
+     * @param mixed $temperatureLimit
+     */
+    public function setTemperatureLimit($temperatureLimit): void
+    {
+        $this->temperatureLimit = $temperatureLimit;
     }
 
 }

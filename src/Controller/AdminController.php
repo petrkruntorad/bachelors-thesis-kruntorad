@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Device;
+use App\Entity\DeviceNotifications;
+use App\Entity\DeviceOptions;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -32,17 +34,31 @@ class AdminController extends AbstractController
      * @IsGranted("ROLE_USER")
      */
     public function index() {
+        //loads allowed devices
         $allowedDevices = $this->em->getRepository(Device::class)->findBy(array('isAllowed'=>1));
+        //loads waiting devices
         $waitingDevices = $this->em->getRepository(Device::class)->getWaitingDevices();
+        //loads not activated devices
         $notActivatedDevices = $this->em->getRepository(Device::class)->findBy(['firstConnection' => null, 'macAddress' => null]);
+        //loads users
         $users = $this->em->getRepository(User::class)->findAll();
 
+        //loads options for devices where target of notifications is current user
+        $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findBy(array('notificationsTargetUser'=>$this->getUser()));
+        $deviceIds = array();
+        //appends ids of all devices for current user
+        foreach ($deviceOptions as $option){
+            array_push($deviceIds, $option->getParentDevice()->getId());
+        }
+        //loads notifications for specific devices
+        $notifications = $this->em->getRepository(DeviceNotifications::class)->findBy(array('parentDevice'=>$deviceIds, 'state'=>false));
 
         return $this->render('admin/dashboard/index.html.twig',[
             'allowedDevices'=>$allowedDevices,
             'waitingDevices'=>$waitingDevices,
             'notActivatedDevices'=>$notActivatedDevices,
-            'users'=>$users
+            'users'=>$users,
+            'notifications'=>$notifications
         ]);
     }
 }

@@ -88,26 +88,6 @@ class DeviceService
         return $writeParameters;
     }
 
-    /**
-     * @throws InternalErrorException
-     */
-    public function isDeviceActive(Device $device, bool $sensorActivity = false)
-    {
-        $active = false;
-        try {
-            $sensors = $this->em->getRepository(Sensor::class)->findBy(array('parentDevice'=>$device));
-            foreach ($sensors as $sensor)
-            {
-                if($sensorActivity)
-                {
-                    $active = true;
-                }
-            }
-        }catch (Exception $exception){
-            throw new InternalErrorException($exception);
-        }
-        return $active;
-    }
 
     /**
      * @throws InternalErrorException

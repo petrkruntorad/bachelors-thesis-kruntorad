@@ -50,9 +50,11 @@
                                     <h3 class="card-title w-100">Přehled zařízení</h3>
                                 </div>
                                 <div class="col-md-2 text-right">
-                                    <a href="{{ path('devices_create',{'origin':app.request.attributes.get('_route')}) }}" class="btn btn-primary w-100" title="Přidat">
-                                        Přidat
-                                    </a>
+                                    {% if is_granted('ROLE_ADMIN') %}
+                                        <a href="{{ path('devices_create',{'origin':app.request.attributes.get('_route')}) }}" class="btn btn-primary w-100" title="Přidat">
+                                            Přidat
+                                        </a>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -103,19 +105,21 @@
                                                         {% endif %}
                                                     {% endfor %}
                                                 {% endif %}
-                                                <a href="{{ path('devices_update',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}"
-                                                   title="Editovat zařízení" class="m-1">
-                                                    <i class="fa-fw fas fa-pen"></i>
-                                                </a>
-                                                <a href="{{ path('devices_settings',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}"
-                                                   title="Nastavení" class="m-1">
-                                                    <i class="fa-fw fas fa-cog"></i>
-                                                </a>
-                                                <a href="{{ path('devices_remove',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}"
-                                                   title="Smazat zařízení" class="m-1 text-danger"
-                                                   onclick="return confirm('Opravdu si přejete smazat toto zařízení se všemi senzory a daty? Tato operace je nevratná.')">
-                                                    <i class="fa-fw fas fa-trash"></i>
-                                                </a>
+                                                {% if is_granted('ROLE_ADMIN') %}
+                                                    <a href="{{ path('devices_update',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}"
+                                                       title="Editovat zařízení" class="m-1">
+                                                        <i class="fa-fw fas fa-pen"></i>
+                                                    </a>
+                                                    <a href="{{ path('devices_settings',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}"
+                                                       title="Nastavení" class="m-1">
+                                                        <i class="fa-fw fas fa-cog"></i>
+                                                    </a>
+                                                    <a href="{{ path('devices_remove',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}"
+                                                       title="Smazat zařízení" class="m-1 text-danger"
+                                                       onclick="return confirm('Opravdu si přejete smazat toto zařízení se všemi senzory a daty? Tato operace je nevratná.')">
+                                                        <i class="fa-fw fas fa-trash"></i>
+                                                    </a>
+                                                {% endif %}
                                             </td>
                                         </tr>
                                     {% endfor %}

@@ -19,6 +19,20 @@ class DeviceNotificationsRepository extends ServiceEntityRepository
         parent::__construct($registry, DeviceNotifications::class);
     }
 
+    public function findLastByDevice(int $deviceId){
+        return $this->createQueryBuilder('dn')
+            ->where('dn.parentDevice = :parentDevice')
+            ->setParameter('parentDevice', $deviceId)
+            ->orderBy('dn.occurrence', 'DESC')
+            ->getFirstResult();
+    }
+    public function findLastBySensor(int $sensorId){
+        return $this->createQueryBuilder('dn')
+            ->where('dn.sensor = :sensorId')
+            ->setParameter('sensorId', $sensorId)
+            ->orderBy('dn.occurrence', 'DESC')
+            ->getFirstResult();
+    }
     // /**
     //  * @return Sensor[] Returns an array of Sensor objects
     //  */

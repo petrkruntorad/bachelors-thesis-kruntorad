@@ -12,15 +12,17 @@
                     </p>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="{{ path('notifications_index') }}" class="nav-link {% if app.request.get('_route') == 'notifications_index' %}active{% endif %}" title="Oznámení">
-                    <i class="nav-icon fas fa-bell"></i>
-                    <p>
-                        Oznámení
-                        <span class="right badge badge-danger">{{ notificationService.getNumberOfActiveNotifications }}</span>
-                    </p>
-                </a>
-            </li>
+            {% if is_granted('ROLE_ADMIN') %}
+                <li class="nav-item">
+                    <a href="{{ path('notifications_index') }}" class="nav-link {% if app.request.get('_route') == 'notifications_index' %}active{% endif %}" title="Oznámení">
+                        <i class="nav-icon fas fa-bell"></i>
+                        <p>
+                            Oznámení
+                            <span class="right badge badge-danger">{{ notificationService.getNumberOfActiveNotifications }}</span>
+                        </p>
+                    </a>
+                </li>
+            {% endif %}
             <li class="nav-item  {% if app.request.get('_route') in ['devices_index','devices_waiting','devices_not_activated','devices_create'] %}menu-is-opening menu-open{% endif %}">
                 <a href="#" class="nav-link" title="Zařízení">
                     <i class="nav-icon fas fa-desktop"></i>
@@ -50,14 +52,16 @@
                     </li>
                 </ul>
             </li>
-            <li class="nav-item">
-                <a href="{{ path('users_index') }}" class="nav-link {% if app.request.get('_route') in ['users_index','user_create','user_update'] %}active{% endif %}" title="Uživatelé">
-                    <i class="nav-icon fas fa-users"></i>
-                    <p>
-                        Uživatelé
-                    </p>
-                </a>
-            </li>
+            {% if is_granted('ROLE_ADMIN') %}
+                <li class="nav-item">
+                    <a href="{{ path('users_index') }}" class="nav-link {% if app.request.get('_route') in ['users_index','user_create','user_update'] %}active{% endif %}" title="Uživatelé">
+                        <i class="nav-icon fas fa-users"></i>
+                        <p>
+                            Uživatelé
+                        </p>
+                    </a>
+                </li>
+            {% endif %}
             <li class="nav-header">Profil</li>
             <li class="nav-item">
                 <a href="{{ path('profile_update',{'id': app.user.id}) }}" class="nav-link {% if app.request.get('_route') == 'profile_update' %}active{% endif %}" title="Upravit profil">

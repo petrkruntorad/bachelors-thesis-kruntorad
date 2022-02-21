@@ -21,6 +21,30 @@
     <!-- Main content -->
     <section class="content">
         <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    {% for message in app.flashes('good') %}
+                        <div class="flash-notice pull-right col-xs-12 " style="padding:0;">
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <strong>{{ message|raw }}</strong>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% for message in app.flashes('bad') %}
+                        <div class="flash-notice pull-right col-xs-12 " style="padding:0;">
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>{{ message|raw }}</strong>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
             <h5 class="mb-2">Zařízení</h5>
             <!-- Info boxes -->
             <div class="row">
@@ -134,18 +158,141 @@
                     <!-- /.col -->
             </div>
             {% endif %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="row d-flex align-items-center">
+                                <div class="col-md-10 text-center text-md-left pt-3 pb-4 pb-md-0 pt-md-0">
+                                    <h3 class="card-title w-100">Přehled nevyřízených oznámení</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                            <table id="notifications"  class="table table-bordered table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Stav</th>
+                                    <th>Obsah</th>
+                                    <th>Přidružené zařízení</th>
+                                    <th>Přidružený senzor</th>
+                                    <th>Akce</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% if notifications is defined and notifications is not empty %}
+                                    {% for notification in notifications %}
+                                        <tr>
+                                            <td>
+                                                {% if notification.state == 1 %}
+                                                    <span class="state bg-success">Neaktivní</span>
+                                                {% else %}
+                                                    <span class="state bg-danger">Aktivní</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ notification.notificationContent }}</td>
+                                            <td>
+                                                {% if notification.parentDevice.name is defined and notification.parentDevice.name is not empty %}
+                                                    {{ notification.parentDevice.name }}
+                                                {% else %}
+                                                    <span class="text-info">Nedefinováno</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if notification.sensor.hardwareId is defined and notification.sensor.hardwareId is not empty %}
+                                                    {{ notification.sensor.hardwareId }}
+                                                {% else %}
+                                                    <span class="text-info">Nedefinováno</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if notification.state == true %}
+                                                    <a href="{{ path('notifications_confirm',{'id':notification.id,'origin':app.request.attributes.get('_route')}) }}" title="Deaktivovat" class="text-danger">
+                                                        <i class="fa-fw fas fa-times"></i>
+                                                    </a>
+                                                {% else %}
+                                                    <a href="{{ path('notifications_confirm',{'id':notification.id,'origin':app.request.attributes.get('_route')}) }}" title="Potvrdit" class="text-success">
+                                                        <i class="fa-fw fas fa-check"></i>
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endif %}
+                                <tfoot>
+                                <tr>
+                                    <th>Stav</th>
+                                    <th>Obsah</th>
+                                    <th>Přidružené zařízení</th>
+                                    <th>Přidružený senzor</th>
+                                    <th>Akce</th>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
         </div><!--/. container-fluid -->
     </section>
     <!-- /.content -->
 {% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- DataTables -->
+    <link rel="stylesheet" href="{{ asset('plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+{% endblock %}
 {% block javascripts %}
     {{ parent() }}
     <!-- PAGE PLUGINS -->
-    <!-- jQuery Mapael -->
-    <script src="{{ asset('plugins/jquery-mousewheel/jquery.mousewheel.js') }}"></script>
-    <script src="{{ asset('plugins/raphael/raphael.min.js') }}"></script>
-    <script src="{{ asset('plugins/jquery-mapael/jquery.mapael.min.js') }}"></script>
-    <script src="{{ asset('plugins/jquery-mapael/maps/usa_states.min.js') }}"></script>
-    <!-- ChartJS -->
-    <script src="{{ asset('plugins/chart.js/Chart.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-buttons/js/dataTables.buttons.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-buttons/js/buttons.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('plugins/jszip/jszip.min.js') }}"></script>
+    <script src="{{ asset('plugins/pdfmake/pdfmake.min.js') }}"></script>
+    <script src="{{ asset('plugins/pdfmake/vfs_fonts.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-buttons/js/buttons.html5.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
+    <script>
+        $(function () {
+            var visible = [0, 1, 2]
+            $("#notifications").DataTable({
+                "paging": true,
+                "lengthChange": false,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": false,
+                "responsive": true,
+                "buttons": [
+                    {
+                        extend: 'excelHtml5',
+                        title: 'Oznámení',
+                        exportOptions: {
+                            columns: visible
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        title: 'Oznámení',
+                        exportOptions: {
+                            columns: visible
+                        }
+                    },
+                ]
+            }).buttons().container().appendTo('#notifications_wrapper .col-md-6:eq(0)');
+        });
+    </script>
 {% endblock %}

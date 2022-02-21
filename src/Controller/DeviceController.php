@@ -18,6 +18,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\CssSelector\Exception\InternalErrorException;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\HeaderUtils;
@@ -77,12 +78,15 @@ class DeviceController extends AbstractController
      */
     public function index()
     {
-        dump(new \DateTime());
+        //array init
         $devicesConfig = [];
+        //loads devices where isAllowed is set to 1 from database
         $devices = $this->em->getRepository(Device::class)->findBy(['isAllowed'=>1]);
         try {
+            //checks if each device has config, otherwise the config for specific device cannot be downloaded
             foreach ($devices as $key => $device)
             {
+                //if device has config than id is added to array
                 if($this->ds->hasConfiguration($device))
                 {
                     $devicesConfig[$key]['id'] = $device->getId();
@@ -90,6 +94,7 @@ class DeviceController extends AbstractController
                 }
             }
         }catch (InternalErrorException $exception){
+            //error message in case of exception
             $this->addFlash(
                 'bad',
                 'Nepodařilo se ověřit existenci konfigurace jednotlivých zařízení: '.$exception
@@ -109,10 +114,13 @@ class DeviceController extends AbstractController
     public function waiting()
     {
         $devicesConfig = [];
+        //loads devices that are waiting for approval
         $devices = $this->em->getRepository(Device::class)->getWaitingDevices();
         try {
+            //checks if each device has config, otherwise the config for specific device cannot be downloaded
             foreach ($devices as $key => $device)
             {
+                //if device has config than id is added to array
                 if($this->ds->hasConfiguration($device))
                 {
                     $devicesConfig[$key]['id'] = $device->getId();
@@ -120,6 +128,7 @@ class DeviceController extends AbstractController
                 }
             }
         }catch (InternalErrorException $exception){
+            //error message in case of exception
             $this->addFlash(
                 'bad',
                 'Nepodařilo se ověřit existenci konfigurace jednotlivých zařízení: '.$exception
@@ -139,10 +148,13 @@ class DeviceController extends AbstractController
     public function not_activated()
     {
         $devicesConfig = [];
+        //loads devices where first connection and MAC address is unset
         $devices = $this->em->getRepository(Device::class)->findBy(['firstConnection' => null, 'macAddress' => null]);
         try {
+            //checks if each device has config, otherwise the config for specific device cannot be downloaded
             foreach ($devices as $key => $device)
             {
+                //if device has config than id is added to array
                 if($this->ds->hasConfiguration($device))
                 {
                     $devicesConfig[$key]['id'] = $device->getId();
@@ -150,6 +162,7 @@ class DeviceController extends AbstractController
                 }
             }
         }catch (InternalErrorException $exception){
+            //error message in case of exception
             $this->addFlash(
                 'bad',
                 'Nepodařilo se ověřit existenci konfigurace jednotlivých zařízení: '.$exception
@@ -169,7 +182,9 @@ class DeviceController extends AbstractController
      */
     public function detail(Device $device, $origin)
     {
+        //loads sensors for current device
         $sensors = $this->em->getRepository(Sensor::class)->findBy(array('parentDevice'=>$device));
+        //if total count of sensors for current device is smaller than 1, the error message is returned
         if(count($sensors)<1)
         {
             $this->addFlash(
@@ -179,24 +194,39 @@ class DeviceController extends AbstractController
         }
         $sensorIds = [];
         $sensorStates = [];
+
+        //checks if device is active by activity of sensors
+        if(!$this->sensorService->isDeviceActive($device)){
+            $content = 'Zařízení ('.$device->getName().') není aktivní. Zkontrolujte jeho stav.';
+            //creates notification
+            $this->notificationService->createNotification($content, $device);
+        }
+
+        //checks if all sensors for current device are active
         foreach ($sensors as $key => $sensor)
         {
+            //if sensor is not active, the notification is created
             if(!$this->sensorService->isSensorActive($sensor->getId()))
             {
                 $content = 'Senzor ('.$sensor->getHardwareId().') není aktivní. Zkontrolujte jeho správné zapojení.';
+                //creates notification
                 $this->notificationService->createNotification($content, $sensor->getParentDevice(),$sensor);
             }
+            //sets state to each sensor for frontend usage
             $sensorStates[$key]['id'] = $sensor->getId();
             $sensorStates[$key]['state'] = $this->sensorService->isSensorActive($sensor->getId());
             array_push($sensorIds, $sensor->getHardwareId());
         }
+        //loads options for current devices
         $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device));
+        //if options are not configured the error message is returned and user is redirected back to page where was detail called
         if(!$deviceOptions)
         {
             $this->addFlash(
                 'bad',
                 'Zařízení nebylo prozatím nastaveno.'
             );
+            //redirects to page from which was detail opened
             return $this->redirectToRoute($origin);
         }
         return $this->render('admin/devices/detail.html.twig',[
@@ -215,6 +245,7 @@ class DeviceController extends AbstractController
      */
     public function create(Request $request, $origin){
 
+        //form init
         $form = $this->createFormBuilder()
             ->add('name', TextType::class,[
                 'label'=> 'Název zařízení',
@@ -242,31 +273,29 @@ class DeviceController extends AbstractController
             ->getForm();
 
         $form->handleRequest($request);
-
+        //if form is submitted and is valid by values on the backend
         if($form->isSubmitted() && $form->isValid()) {
             try {
-                $name = $form['name']->getData();
-                $note = $form['note']->getData();
-                $isAllowed = 0;
-
+                //creates new device and sets values from form
                 $device = new Device();
-                $device->setName($name);
-                $device->setNote($note);
-                $device->setIsAllowed($isAllowed);
+                $device->setName($form['name']->getData());
+                $device->setNote($form['note']->getData());
+                $device->setIsAllowed(0);
                 $device->setUniqueHash(Uuid::v4());
-
+                //saves data
                 $this->em->persist($device);
                 $this->em->flush();
-
+                //returns success message
                 $this->addFlash(
                     'good',
-                    'Zařízení '.$name.' bylo úspěšně přidáno jako neaktivní zařízení. Pro dokončení nastavení přejděte <a href="'.$this->generateUrl('devices_settings',['id'=>$device->getId(), 'origin'=>$origin]).'" title="zde">zde</a>.'
+                    'Zařízení '.$device->getName().' bylo úspěšně přidáno jako neaktivní zařízení. Pro dokončení nastavení přejděte <a href="'.$this->generateUrl('devices_settings',['id'=>$device->getId(), 'origin'=>$origin]).'" title="zde">zde</a>.'
                 );
-
+                //redirects to page from which was current page opened
                 return $this->redirectToRoute($origin);
             }
             catch (Exception $exception)
             {
+                //in case of exception returns message
                 $this->addFlash(
                     'bad',
                     'Nastala neočekávaná vyjímka: '.$exception
@@ -404,7 +433,7 @@ class DeviceController extends AbstractController
 
         $form = $this->createFormBuilder($settings)
             ->add('notifications_status', ChoiceType::class,[
-                'label'=> 'Odesílání notifkací',
+                'label'=> 'Odesílání oznámení',
                 'attr'=>[
                     'class'=>'select2',
                     'data-placeholder'=>'Odesílání notifkací',
@@ -416,7 +445,7 @@ class DeviceController extends AbstractController
                 ],
             ])
             ->add('notifications_target_user', EntityType::class, [
-                'label'=> 'Příjemce notifikací',
+                'label'=> 'Příjemce oznámení',
                 'class' => User::class,
                 'required'=>false,
                 'placeholder'=>'Nevybráno',
@@ -427,13 +456,22 @@ class DeviceController extends AbstractController
                 'choice_label' => 'username',
             ])
             ->add('write_interval', ChoiceType::class, [
-                'label'=> 'Interval zápisu notifikací',
+                'label'=> 'Interval zápisu dat',
                 'attr'=>[
                     'class'=>'select2',
-                    'data-placeholder'=>'Interval zápisu notifikací',
+                    'data-placeholder'=>'Interval zápisu dat',
                     'style'=>"width: 100%;",
                 ],
                 'choices' => $this->ds->getWriteIntervals()
+            ])
+            ->add('temperature_limit', NumberType::class,[
+                'label'=> 'Teplotní limit pro odeslání oznámení',
+                'required'=>false,
+                'attr'=>[
+                    'class'=>'form-control',
+                    'placeholder'=>'Teplotní limit pro odeslání oznámení',
+                    'min'=>0
+                ]
             ])
             ->add('save', SubmitType::class,[
                 'label'=>'Uložit',
@@ -447,6 +485,13 @@ class DeviceController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid()) {
            try {
+               if($form['notifications_status']->getData() == 1 && !$form['notifications_target_user']->getData()){
+                   $this->addFlash(
+                       'bad',
+                       'Pro aktivaci odesílání oznámení musí být zvolen cílový uživatel.'
+                   );
+                   $settings->setNotificationsStatus(0);
+               }
                 $this->em->persist($settings);
                 $this->em->flush();
 
