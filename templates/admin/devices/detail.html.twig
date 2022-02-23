@@ -69,6 +69,10 @@
                         <dl>
                             <dt>MAC adresa:</dt>
                             <dd>{{ device.macAddress }}</dd>
+                            {% if device.localIpAddress is defined and device.localIpAddress is not empty %}
+                            <dt>IP adresa:</dt>
+                            <dd>{{ device.localIpAddress }}</dd>
+                            {% endif %}
                             <dt>Unikátní klíč:</dt>
                             <dd>{{ device.uniqueHash }}</dd>
                             <dt>Interval zápisu:</dt>
@@ -253,7 +257,7 @@
                                 y = item.datapoint[1].toFixed(2);
 
                             showTooltip(item.pageX, item.pageY,
-                                "Teplota=" + y);
+                                y+" °C");
                         }
                     } else {
                         $("#tooltip").remove();

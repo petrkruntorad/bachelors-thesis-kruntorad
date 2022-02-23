@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <title>Měření teplot</title>
+    <style>
+        *{
+            font-family: 'Source Sans Pro', 'sans-serif';
+        }
+        body{
+            margin: 0;
+        }
+        .mail-header {
+            background-color: #343a40;
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+        .mail-header h1 {
+            margin: 0 auto;
+            max-width: 768px;
+        }
+        .mail-footer {
+            background-color: #343a40;
+            padding: 1rem 2rem;
+            text-align: center;
+        }
+        .mail-footer a {
+            color: rgba(255,255,255,.8);
+            text-decoration: none;
+            margin: 0 auto;
+            max-width: 768px;
+            display: block;
+        }
+        .mail-footer a:hover{
+           text-decoration: underline;
+        }
+        .mail-body {
+            padding: 4rem 2rem;
+            max-width: 768px;
+            margin: 0 auto;
+        }
+        .main-content {
+            font-size: 1.3rem;
+        }
+    </style>
+</head>
+<body>
+<div class="mail-wrapper">
+    <div class="mail-header">
+        <h1>{{ title }}</h1>
+    </div>
+    <div class="mail-body">
+        {% block content %}
+        {% endblock %}
+    </div>
+    <div class="mail-footer">
+        <a href="{{ url('login') }}">
+            Měření teplot
+        </a>
+    </div>
+</div>
+</body>
+</html>

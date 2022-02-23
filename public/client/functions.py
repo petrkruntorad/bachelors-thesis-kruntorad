@@ -1,4 +1,6 @@
-import os, time, requests, logging
+import os, requests, logging
+import socket
+
 from crontab import CronTab
 logging.basicConfig(filename='log.txt', encoding='utf-8', level=logging.ERROR)
 
@@ -54,13 +56,22 @@ def getMainNetworkInterfaceMacAdress():
     except RuntimeError as exception:
         logging.error("Internal error: " + str(exception))
 
+def getIpAddress():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        return socket.gethostbyname(s.getsockname()[0])
+    except RuntimeError as exception:
+        logging.error("Internal error: " + str(exception))
+
 def touchServer(uniqueHash: str, touchUrl: str):
     try:
         macAddress = getMainNetworkInterfaceMacAdress()
+        ipAddress = getIpAddress()
 
         session = requests.Session()
 
-        data = {'uniqueHash': uniqueHash, 'macAddress': macAddress}
+        data = {'uniqueHash': uniqueHash, 'macAddress': macAddress, 'ipAddress':ipAddress}
 
         request = session.post(url=touchUrl, data=data)
 

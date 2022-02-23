@@ -199,7 +199,7 @@ class DeviceController extends AbstractController
         if(!$this->sensorService->isDeviceActive($device)){
             $content = 'Zařízení ('.$device->getName().') není aktivní. Zkontrolujte jeho stav.';
             //creates notification
-            $this->notificationService->createNotification($content, $device);
+            $this->notificationService->createNotification($content, $device, null, 'activity');
         }
 
         //checks if all sensors for current device are active
@@ -210,7 +210,7 @@ class DeviceController extends AbstractController
             {
                 $content = 'Senzor ('.$sensor->getHardwareId().') není aktivní. Zkontrolujte jeho správné zapojení.';
                 //creates notification
-                $this->notificationService->createNotification($content, $sensor->getParentDevice(),$sensor);
+                $this->notificationService->createNotification($content, $sensor->getParentDevice(), $sensor, 'activity');
             }
             //sets state to each sensor for frontend usage
             $sensorStates[$key]['id'] = $sensor->getId();
@@ -302,6 +302,7 @@ class DeviceController extends AbstractController
                 );
             }
         }else{
+            //catches all errors from form and prints them
             foreach ($form->getErrors(true) as $formError) {
                 $this->addFlash(
                     'bad',
@@ -322,6 +323,7 @@ class DeviceController extends AbstractController
      */
     public function update(Request $request, Device $device, $origin){
 
+        //form init with data for specified device from database
         $form = $this->createFormBuilder($device)
             ->add('name', TextType::class,[
                 'label'=> 'Název zařízení',
@@ -361,32 +363,37 @@ class DeviceController extends AbstractController
             ->getForm();
 
         $form->handleRequest($request);
-
+        //if form is submitted and is valid by values on the backend
         if($form->isSubmitted() && $form->isValid()) {
             try {
-
+                //saves changes
                 $this->em->persist($device);
                 $this->em->flush();
 
+                //return success message
                 $this->addFlash(
                     'good',
                     'Zařízení '.$device->getName().' bylo úspěšně upraveno.'
                 );
 
+                //checks if origin page is detail
                 if($origin == 'devices_detail')
                 {
+                    //redirects to detail page with all required parameters
                     return $this->redirectToRoute($origin, array('id'=>$device->getId(), 'origin'=>$origin));
                 }
                 return $this->redirectToRoute($origin);
             }
             catch (Exception $exception)
             {
+                //in case of exception returns message
                 $this->addFlash(
                     'bad',
-                    'Nastala neočekávaná vyjímka.'
+                    'Nastala neočekávaná vyjímka: '.$exception
                 );
             }
         }else{
+            //catches all errors from form and prints them
             foreach ($form->getErrors(true) as $formError) {
                 $this->addFlash(
                     'bad',
@@ -407,8 +414,10 @@ class DeviceController extends AbstractController
      */
     public function settings(Device $device,Request $request, $origin)
     {
+        //loads settings for specific device from database
         $settings = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device));
 
+        //if settings are missing then inits predefined settings and saves them
         if (!$settings)
         {
             $settings = new DeviceOptions();
@@ -418,11 +427,11 @@ class DeviceController extends AbstractController
             $this->em->persist($settings);
             $this->em->flush();
         }
-
+        //loads all users
         $users = $this->em->getRepository(User::class)->findAll();
 
         $userSelection = [''=>''];
-
+        //if users than fill array with username and id
         if ($users)
         {
             foreach ($users as $user)
@@ -430,7 +439,7 @@ class DeviceController extends AbstractController
                 $userSelection[$user->getUserIdentifier()] = $user->getId();
             }
         }
-
+        //inits form with settings from database
         $form = $this->createFormBuilder($settings)
             ->add('notifications_status', ChoiceType::class,[
                 'label'=> 'Odesílání oznámení',
@@ -483,37 +492,41 @@ class DeviceController extends AbstractController
 
         $form->handleRequest($request);
 
+        //if form is submitted and is valid by settings on the backend
         if($form->isSubmitted() && $form->isValid()) {
-           try {
-               if($form['notifications_status']->getData() == 1 && !$form['notifications_target_user']->getData()){
-                   $this->addFlash(
-                       'bad',
-                       'Pro aktivaci odesílání oznámení musí být zvolen cílový uživatel.'
-                   );
-                   $settings->setNotificationsStatus(0);
-               }
+            try {
+                //if notifications are switched to enabled, it verifies that the target user was selected as well, otherwise, it disables the notification
+                if ($form['notifications_status']->getData() == 1 && !$form['notifications_target_user']->getData()) {
+                    //throws information about missing notification target
+                    $this->addFlash(
+                        'bad',
+                        'Pro aktivaci odesílání oznámení musí být zvolen cílový uživatel.'
+                    );
+                    $settings->setNotificationsStatus(0);
+                }
+                //saves settings
                 $this->em->persist($settings);
                 $this->em->flush();
 
+                //return success message
                 $this->addFlash(
                     'good',
                     'Nastavení bylo úspěšně dokončeno'
                 );
 
-                if($origin == 'devices_detail')
-                {
-                    return $this->redirectToRoute($origin, array('id'=>$device->getId(), 'origin'=>$origin));
+                if ($origin == 'devices_detail') {
+                    return $this->redirectToRoute($origin, array('id' => $device->getId(), 'origin' => $origin));
                 }
                 return $this->redirectToRoute($origin);
-            }
-            catch (Exception $exception)
-            {
+            } catch (Exception $exception) {
+                //if exception occurs returns error message
                 $this->addFlash(
                     'bad',
-                    'Nastala neočekávaná vyjímka.'
+                    'Nastala neočekávaná vyjímka: ' . $exception
                 );
             }
         }else{
+            //returns each form error if occurs
             foreach ($form->getErrors(true) as $formError) {
                 $this->addFlash(
                     'bad',
@@ -542,30 +555,38 @@ class DeviceController extends AbstractController
                 $this->em->remove($deviceOptions);
                 $this->em->flush();
             }
-
+            //loads every sensor for device
             $sensors = $this->em->getRepository(Sensor::class)->findBy(array('parentDevice'=>$device));
             if ($sensors)
             {
+                //iterates each sensor and removes received data from database
                 foreach ($sensors as $sensor)
                 {
+                    //loads every received data for specified sensor
                     $sensorData = $this->em->getRepository(SensorData::class)->findBy(array('parentSensor'=>$sensor));
+                    //checks if any record exist
                     if ($sensorData)
                     {
+                        //iterates each record
                         foreach ($sensorData as $data)
                         {
+                            //removes each record
                             $this->em->remove($data);
                             $this->em->flush();
                         }
                     }
+                    //removes each sensor
                     $this->em->remove($sensor);
                     $this->em->flush();
                 }
 
             }
 
+            //removes device and saves changes
             $this->em->remove($device);
             $this->em->flush();
 
+            //returns success message
             $this->addFlash(
                 'good',
                 'Zařízení a jeho nastavení byla úspěšně odebrána.'
@@ -573,6 +594,7 @@ class DeviceController extends AbstractController
         }
         catch (Exception $exception)
         {
+            //if exception occurs returns error message
             $this->addFlash(
                 'bad',
                 'Nastala neočekávaná vyjímka: '.$exception
@@ -590,16 +612,21 @@ class DeviceController extends AbstractController
     public function activate(Device $device, $origin)
     {
         try {
+            //checks if device was set up, device without settings cannot be allowed
             if($this->ds->hasConfiguration($device)){
+                //sets is allowed to 1
                 $device->setIsAllowed(1);
+                //saves changes
                 $this->em->persist($device);
                 $this->em->flush();
 
+                //returns success message
                 $this->addFlash(
                     'good',
                     'Zařízení bylo úšpěšně potvrzeno.'
                 );
             }else{
+                //if configuration does not exist, returns error message
                 $this->addFlash(
                     'bad',
                     'Před schválením zařízení je nejprve potřeba dokončit konfiguraci.'
@@ -608,6 +635,7 @@ class DeviceController extends AbstractController
         }
         catch (Exception $exception)
         {
+            //if exception occurs returns error message
             $this->addFlash(
                 'bad',
                 'Nastala neočekávaná vyjímka: '.$exception
@@ -624,10 +652,14 @@ class DeviceController extends AbstractController
     public function deactivate(Device $device, $origin)
     {
         try {
+            //IsAllowed is changed to 0 so new data for that device cannot be added
             $device->setIsAllowed(0);
+
+            //saves change
             $this->em->persist($device);
             $this->em->flush();
 
+            //returns success message
             $this->addFlash(
                 'good',
                 'Zařízení bylo úšpěšně zakázáno.'
@@ -635,6 +667,7 @@ class DeviceController extends AbstractController
         }
         catch (Exception $exception)
         {
+            //if exception occurs returns error message
             $this->addFlash(
                 'bad',
                 'Nastala neočekávaná vyjímka: '.$exception
@@ -650,35 +683,54 @@ class DeviceController extends AbstractController
     public function write_data()
     {
         try {
+            //checks if unique hash is defined
             if (!$_POST['uniqueHash'])
             {
                 throw new Exception("Unique hash is missing.");
             }
+            //checks if sensor ID is defined
             if (!$_POST['sensorId'])
             {
                 throw new Exception("Sensor Id is missing.");
             }
+            //checks if raw sensor data are defined
             if (!$_POST['rawSensorData'])
             {
                 throw new Exception("Sensor data are missing.");
             }
+
+            //assigns values from post to variables
             $sensorId = strval($_POST['sensorId']);
             $uniqueHash = strval($_POST['uniqueHash']);
             $rawSensorData = floatval($_POST['rawSensorData']);
 
+            //checks if device with specified unique hash exists
             $device = $this->em->getRepository(Device::class)->findOneBy(array('uniqueHash'=>$uniqueHash));
 
+            //gets options for device
+            $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device));
+
+            //if device is not defined throws exception
             if (!$device)
             {
                 throw new Exception("No such device with a specified unique hash.");
             }
 
+            //if device is not defined throws exception
+            if (!$deviceOptions)
+            {
+                throw new Exception("Device is not configured. Please try again later.");
+            }
+
+            //checks if device is allowed otherwise throws exception
             if (!$device->getIsAllowed()){
                 throw new Exception("The device is not allowed yet. Please allow the device in the administration first.");
             }
 
+            //loads information about specified sensor
             $sensor = $this->em->getRepository(Sensor::class)->findOneBy(array('hardwareId'=>$sensorId, 'parentDevice'=>$device));
 
+            //checks if sensor exist otherwise creates new record
             if (!$sensor)
             {
                 $sensor = new Sensor();
@@ -688,6 +740,24 @@ class DeviceController extends AbstractController
                 $this->em->flush();
             }
 
+            //checks if limit is set
+
+            if($deviceOptions->getTemperatureLimit() != NULL){
+                //checks if real value is higher than limit
+                if($rawSensorData > $deviceOptions->getTemperatureLimit()){
+                    //notifications message
+                    $content = "Naměřená hodnota (".$rawSensorData." °C) senzoru (".$sensor->getHardwareId().") u zařízení překročila nastavenou teplotu (".$deviceOptions->getTemperatureLimit()." °C)";
+                    //calls service for notification creation
+                    try {
+                        $this->notificationService->createNotification($content, $device, $sensor, 'temperature');
+                    }catch (Exception $exception){
+                        throw new Exception($exception);
+                    }
+
+                }
+            }
+
+            //adds new data to database and saves them
             $newSensorData = new SensorData();
             $newSensorData->setParentSensor($sensor);
             $newSensorData->setSensorData($rawSensorData);
@@ -695,6 +765,7 @@ class DeviceController extends AbstractController
             $this->em->persist($newSensorData);
             $this->em->flush();
 
+            //returns success message
             return new Response('Success');
         }
         catch (Exception $exception)
@@ -710,40 +781,58 @@ class DeviceController extends AbstractController
     public function touchServer()
     {
         try {
+            //checks if unique hash is defined
             if (!$_POST['uniqueHash'])
             {
                 throw new Exception("Unique hash is missing.");
             }
-
+            //checks if MAC address is defined
             if (!$_POST['macAddress'])
             {
                 throw new Exception("MAC address is missing.");
             }
 
+
+            //assigns values from post to variables
             $uniqueHash = strval($_POST['uniqueHash']);
             $macAddress = strval($_POST['macAddress']);
 
+            //checks if device with specified unique hash exists
             $device = $this->em->getRepository(Device::class)->findOneBy(array('uniqueHash'=>$uniqueHash));
 
+            //if device is not defined throws exception
             if (!$device)
             {
                 throw new Exception("No such device with a specified unique hash.");
             }
 
+            //checks if device first connection is not set and set current datetime
             if (!$device->getFirstConnection())
             {
                 $device->setFirstConnection(new \DateTime("now"));
             }
+            //sets current datetime as last connection
             $device->setLastConnection(new \DateTime("now"));
+
+            //sets MAC address
             $device->setMacAddress($macAddress);
 
+            //checks if IP address is defined and then adds it to database
+            if($_POST['ipAddress']){
+                $device->setLocalIpAddress(strval($_POST['ipAddress']));
+            }
+            //saves changes
             $this->em->persist($device);
             $this->em->flush();
+
+            //checks every device activity
+            $this->sensorService->checkEveryDevice();
 
             return new Response('Success');
         }
         catch (Exception $exception)
         {
+            //throws an exception in case some error occurs
             throw new Exception("Something went wrong: ".$exception);
         }
     }
@@ -755,33 +844,40 @@ class DeviceController extends AbstractController
     public function getUpdates()
     {
         try {
+            //checks if uniqueHash is defined
             if (!$_POST['uniqueHash'])
             {
+                //throws an exception in case that unique hash is missing
                 throw new Exception("Unique hash is missing.");
             }
+            //assigns uniqueHash to variable
             $uniqueHash = strval($_POST['uniqueHash']);
+            //checks if device with specified uniqueHash is in database
             $device = $this->em->getRepository(Device::class)->findOneBy(array('uniqueHash'=>$uniqueHash));
 
+            //if device is not defined throws exception
             if (!$device)
             {
                 throw new Exception("No such device with a specified unique hash.");
             }
 
-            $fileContent = [];
-
+            //inits the response with generated json
             $response = new Response($this->ds->generateConfigFile($device));
 
+            //inits the disposition of file
             $disposition = HeaderUtils::makeDisposition(
                 HeaderUtils::DISPOSITION_ATTACHMENT,
                 'config.json'
             );
-
+            //sets header
             $response->headers->set('Content-Disposition', $disposition);
 
+            //returns response
             return $response;
         }
         catch (Exception $exception)
         {
+            //throws an exception in case some error occurs
             throw new Exception("Something went wrong: ".$exception);
         }
     }
@@ -795,32 +891,41 @@ class DeviceController extends AbstractController
 
 
         try {
-            $files = array("main.py", "functions.py", "init.py", "testCron.py");
+            //inits array with all files that should be included in zip file
+            $files = array("main.py", "functions.py", "init.py");
 
+            //inits ZipArchive
             $zip = new \ZipArchive();
 
+            //defines zip name
             $filename = "install.zip";
 
+            //opens specified zip file
             $zip->open($filename,  \ZipArchive::CREATE);
 
+            //Adds generated config from database to JSON file and then adds JSON to zip file
             $zip->addFromString("config.json", $this->ds->generateConfigFile($device));
             foreach ($files as $file) {
                 $zip->addFile($this->getParameter('client_folder').'/'.basename($file), $file);
             }
 
+            //closes file
             $zip->close();
 
+            //sets response with all headers
             $response = new Response(file_get_contents($filename));
             $response->headers->set('Content-Type', 'application/zip');
             $response->headers->set('Content-Disposition', 'attachment;filename="' . $filename . '"');
             $response->headers->set('Content-length', filesize($filename));
 
+            //deletes the temp file for download
             @unlink($filename);
 
             return $response;
 
         }catch (Exception $exception)
         {
+            //throws an exception in case some error occurs
             throw new Exception($exception);
         }
     }

@@ -148,9 +148,10 @@ class SecurityController extends AbstractController
             }
             catch (Exception $exception)
             {
+                //in case of exception returns message
                 $this->addFlash(
                     'bad',
-                    'Nastala neočekávaná vyjímka.'
+                    'Nastala neočekávaná vyjímka: '.$exception
                 );
             }
         }else{

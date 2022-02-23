@@ -31,21 +31,26 @@ class SensorController extends AbstractController
     public function remove(Sensor $sensor, string $origin)
     {
         try{
+            //loads data for sensor
             $sensorData = $this->em->getRepository(SensorData::class)->findBy(array('parentSensor'=>$sensor));
+            //removes every data for sensor
             foreach ($sensorData as $row)
             {
                 $this->em->remove($row);
             }
             $this->em->flush();
 
+            //removes sensor
             $this->em->remove($sensor);
             $this->em->flush();
 
+            //returns success message
             $this->addFlash(
                 'good',
                 'Senzor byl úspěšně odstraněn.'
             );
         }catch (Exception $exception){
+            //in case of exception returns message
             $this->addFlash(
                 'bad',
                 'Nastala neočekávaná vyjímka: '.$exception

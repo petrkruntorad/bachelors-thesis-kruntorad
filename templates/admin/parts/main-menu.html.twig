@@ -23,7 +23,7 @@
                     </a>
                 </li>
             {% endif %}
-            <li class="nav-item  {% if app.request.get('_route') in ['devices_index','devices_waiting','devices_not_activated','devices_create'] %}menu-is-opening menu-open{% endif %}">
+            <li class="nav-item  {% if app.request.get('_route') in ['devices_index','devices_waiting','devices_not_activated','devices_create', 'devices_settings','devices_update'] %}menu-is-opening menu-open{% endif %}">
                 <a href="#" class="nav-link" title="Zařízení">
                     <i class="nav-icon fas fa-desktop"></i>
                     <p>
@@ -31,9 +31,9 @@
                         <i class="fas fa-angle-left right"></i>
                     </p>
                 </a>
-                <ul class="nav nav-treeview {% if app.request.get('_route') in ['devices_index','devices_waiting','devices_not_activated','devices_create', 'devices_settings', 'devices_detail'] %}d-block{% endif %}" style="display: none;">
+                <ul class="nav nav-treeview {% if app.request.get('_route') in ['devices_index','devices_waiting','devices_not_activated','devices_create', 'devices_settings', 'devices_detail','devices_update'] %}d-block{% endif %}" style="display: none;">
                     <li class="nav-item">
-                        <a href="{{ path('devices_index') }}" class="nav-link {% if app.request.get('_route') in ['devices_index','devices_create', 'devices_detail'] %}active{% endif %}">
+                        <a href="{{ path('devices_index') }}" class="nav-link {% if app.request.get('_route') in ['devices_index','devices_create', 'devices_detail', 'devices_settings', 'devices_update'] %}active{% endif %}">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Schválená</p>
                         </a>

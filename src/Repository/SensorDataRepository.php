@@ -37,7 +37,7 @@ class SensorDataRepository extends ServiceEntityRepository
             ->orderBy('sd.id','DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getResult()[0];
+            ->getResult();
     }
 
     // /**

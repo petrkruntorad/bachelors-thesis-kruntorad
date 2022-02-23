@@ -91,14 +91,14 @@
                                             </td>
                                             <td>{{ device.macAddress }}</td>
                                             <td>
-                                                <a href="{{ path('device_activate', {'id':device.id, 'origin':app.request.attributes.get('_route')}) }}" title="Potvrdit zařízení" class="m-1 text-success">
+                                                <a href="{{ path('device_activate', {'id':device.id, 'origin':app.request.attributes.get('_route')}) }}" title="Potvrdit zařízení" class="m-2 text-success">
                                                     <i class="fa-fw fas fa-check"></i>
                                                 </a>
                                                 {% if devicesConfig is defined and devicesConfig is not empty %}
                                                     {% for deviceConfig in devicesConfig %}
                                                         {% if deviceConfig.id == device.id %}
                                                             <a href="#" title="Stáhnout konfigurační soubory"
-                                                               class="m-1 text-info get-config"
+                                                               class="m-2 text-info get-config"
                                                                onclick="showModal('{{ url('devices_get_config',{'id':device.id})|e('js') }}');">
                                                                 <i class="fa-fw fa fa-download" aria-hidden="true"></i>
                                                             </a>
@@ -107,15 +107,15 @@
                                                 {% endif %}
                                                 {% if is_granted('ROLE_ADMIN') %}
                                                     <a href="{{ path('devices_update',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}"
-                                                       title="Editovat zařízení" class="m-1">
+                                                       title="Editovat zařízení" class="m-2">
                                                         <i class="fa-fw fas fa-pen"></i>
                                                     </a>
                                                     <a href="{{ path('devices_settings',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}"
-                                                       title="Nastavení" class="m-1">
+                                                       title="Nastavení" class="m-2">
                                                         <i class="fa-fw fas fa-cog"></i>
                                                     </a>
                                                     <a href="{{ path('devices_remove',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}"
-                                                       title="Smazat zařízení" class="m-1 text-danger"
+                                                       title="Smazat zařízení" class="m-2 text-danger"
                                                        onclick="return confirm('Opravdu si přejete smazat toto zařízení se všemi senzory a daty? Tato operace je nevratná.')">
                                                         <i class="fa-fw fas fa-trash"></i>
                                                     </a>

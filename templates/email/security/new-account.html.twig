@@ -1,0 +1,10 @@
+{% extends 'base_mail.html.twig' %}
+{% block content %}
+    <div class="main-content">
+        <p>Dobrý den,</p>
+        <p>Byl Vám vytvořen účet <b>{{ accountName }}</b> s heslem <b>{{ password }}</b>. Přihlásit se můžete <a
+                    href="{{ url('login') }}" target="_blank">zde</a>.</p>
+    </div>
+    <hr>
+    <span>Na zprávu neodpovídejte.</span>
+{% endblock %}

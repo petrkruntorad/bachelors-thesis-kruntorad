@@ -158,6 +158,7 @@
                     <!-- /.col -->
             </div>
             {% endif %}
+            <h5 class="mb-2">Oznámení</h5>
             <div class="row">
                 <div class="col-12">
                     <div class="card">
@@ -174,6 +175,7 @@
                                 <thead>
                                 <tr>
                                     <th>Stav</th>
+                                    <th>Výskyt</th>
                                     <th>Obsah</th>
                                     <th>Přidružené zařízení</th>
                                     <th>Přidružený senzor</th>
@@ -191,10 +193,13 @@
                                                     <span class="state bg-danger">Aktivní</span>
                                                 {% endif %}
                                             </td>
-                                            <td>{{ notification.notificationContent }}</td>
+                                            <td>{{ notification.occurrence|date("H:i:s d.m.Y") }}</td>
+                                            <td style="max-width: 300px">{{ notification.notificationContent }}</td>
                                             <td>
                                                 {% if notification.parentDevice.name is defined and notification.parentDevice.name is not empty %}
-                                                    {{ notification.parentDevice.name }}
+                                                    <a href="{{ path('devices_detail', {'id':notification.parentDevice.Id,'origin':app.request.attributes.get('_route')}) }}" title="{{ notification.parentDevice.name }}">
+                                                        {{ notification.parentDevice.name }}
+                                                    </a>
                                                 {% else %}
                                                     <span class="text-info">Nedefinováno</span>
                                                 {% endif %}
@@ -208,11 +213,13 @@
                                             </td>
                                             <td class="text-center">
                                                 {% if notification.state == true %}
-                                                    <a href="{{ path('notifications_confirm',{'id':notification.id,'origin':app.request.attributes.get('_route')}) }}" title="Deaktivovat" class="text-danger">
+                                                    <a href="{{ path('notifications_confirm',{'id':notification.id,'origin':app.request.attributes.get('_route')}) }}"
+                                                       title="Deaktivovat" class="text-danger m-2">
                                                         <i class="fa-fw fas fa-times"></i>
                                                     </a>
                                                 {% else %}
-                                                    <a href="{{ path('notifications_confirm',{'id':notification.id,'origin':app.request.attributes.get('_route')}) }}" title="Potvrdit" class="text-success">
+                                                    <a href="{{ path('notifications_confirm',{'id':notification.id,'origin':app.request.attributes.get('_route')}) }}"
+                                                       title="Potvrdit" class="text-success m-2">
                                                         <i class="fa-fw fas fa-check"></i>
                                                     </a>
                                                 {% endif %}
@@ -223,6 +230,7 @@
                                 <tfoot>
                                 <tr>
                                     <th>Stav</th>
+                                    <th>Výskyt</th>
                                     <th>Obsah</th>
                                     <th>Přidružené zařízení</th>
                                     <th>Přidružený senzor</th>
@@ -267,7 +275,7 @@
     <script src="{{ asset('plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
     <script>
         $(function () {
-            var visible = [0, 1, 2]
+            var visible = [0, 1, 2, 3, 4]
             $("#notifications").DataTable({
                 "paging": true,
                 "lengthChange": false,

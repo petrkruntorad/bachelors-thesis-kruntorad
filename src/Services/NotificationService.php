@@ -34,10 +34,11 @@ class NotificationService
     /**
      * @throws InternalErrorException
      */
-    public function createNotification(string $content, Device $device = null, Sensor $sensor = null)
+    public function createNotification(string $content, Device $device = null, Sensor $sensor = null, string $notificationType = null)
     {
+
         try {
-            if(!$this->checkIfNotificationExists($device, $sensor))
+            if(!$this->checkIfNotificationExists($device, $sensor, $notificationType))
             {
                 if(!$device && !$sensor){
                     throw new ParameterNotFoundException('Nebylo poskytnuto zařízení nebo senzor.');
@@ -58,17 +59,39 @@ class NotificationService
                 }
                 $notification->setState(0);
                 $notification->setOccurrence(new \DateTime());
+                $notification->setNotificationType($notificationType);
                 $this->em->persist($notification);
                 $this->em->flush();
 
                 if($deviceOptions->getNotificationsStatus()){
                     if($deviceOptions->getNotificationsTargetUser()){
-                        $this->mailerService->sendEmail($deviceOptions->getNotificationsTargetUser()->getEmail(),$content);
+                        $this->mailerService->sendNotificationEmail($deviceOptions->getNotificationsTargetUser()->getEmail(),$content);
                     }else{
                         throw new Exception('Pro zařízení není nastaven cílový uživatel.');
                     }
 
                 }
+            }else{
+                //if device and sensor is null throws exception
+                if($device == null && $sensor == null)
+                {
+                    throw new InternalErrorException("Nebylo poskytnuto žádné zařízení nebo senzor.");
+                }
+                //if device is not set but sensor is provided, the parent device value is used
+                if(!$device && $sensor){
+                    $device = $sensor->getParentDevice();
+                }
+
+                //checks what value were provided and chooses the right query
+                if ($device && $sensor == null) {
+                    $notification = $this->em->getRepository(DeviceNotifications::class)->findOneBy(array('state'=>false, 'parentDevice'=>$device, 'sensor'=>null, 'notificationType' => $notificationType));
+                }else{
+                    $notification = $this->em->getRepository(DeviceNotifications::class)->findOneBy(array('state'=>false, 'parentDevice'=>$device, 'sensor'=>$sensor, 'notificationType' => $notificationType));
+                }
+                //sets current datetime
+                $notification->setOccurrence(new \DateTime());
+                $this->em->persist($notification);
+                $this->em->flush();
             }
         }catch (Exception $exception){
             throw new InternalErrorException($exception);
@@ -92,7 +115,7 @@ class NotificationService
     /**
      * @throws InternalErrorException
      */
-    public function checkIfNotificationExists(Device $device = null, Sensor $sensor = null)
+    public function checkIfNotificationExists(Device $device = null, Sensor $sensor = null, string $notificationType = null)
     {
         try {
             if($device == null && $sensor == null)
@@ -104,12 +127,12 @@ class NotificationService
             }
 
             if($device && $sensor) {
-                $notification = $this->em->getRepository(DeviceNotifications::class)->findOneBy(array('state'=>false, 'parentDevice'=>$device, 'sensor'=>$sensor));
+                $notification = $this->em->getRepository(DeviceNotifications::class)->findOneBy(array('state'=>false, 'parentDevice'=>$device, 'sensor'=>$sensor, 'notificationType' => $notificationType));
                 if($notification){
                     return true;
                 }
             }elseif ($device && $sensor == null) {
-                $notification = $this->em->getRepository(DeviceNotifications::class)->findOneBy(array('state'=>false, 'parentDevice'=>$device, 'sensor'=>null));
+                $notification = $this->em->getRepository(DeviceNotifications::class)->findOneBy(array('state'=>false, 'parentDevice'=>$device, 'sensor'=>null, 'notificationType' => $notificationType));
                 if($notification){
                     return true;
                 }

@@ -50,14 +50,11 @@ class SensorDataController extends AbstractController
         if($this->ds->getWriteParametersForCron($deviceOptions->getWriteInterval()))
         {
             $steps = $this->ds->getWriteParametersForCron($deviceOptions->getWriteInterval())['secondsSteps'];
-            $seconds = $steps;
-            $totalSeconds = $steps*90;
         }else{
             $steps = 60;
-            $seconds = $steps;
-            $totalSeconds = $steps*90;
         }
-        //$seconds = 60;
+        $seconds = $steps;
+        $totalSeconds = $steps*90;
         $currentTimestamp = strtotime(date("Y-m-d H:i:s"));
 
         if ($push == 0){

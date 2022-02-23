@@ -43,6 +43,11 @@ class DeviceNotifications
      */
     private $state;
 
+    /**
+     * @ORM\Column(name="notificationType", type="string", length=255, nullable=true)
+     */
+    private $notificationType;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -126,6 +131,22 @@ class DeviceNotifications
     public function setOccurrence($occurrence): void
     {
         $this->occurrence = $occurrence;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getNotificationType()
+    {
+        return $this->notificationType;
+    }
+
+    /**
+     * @param mixed $notificationType
+     */
+    public function setNotificationType($notificationType): void
+    {
+        $this->notificationType = $notificationType;
     }
 
 }

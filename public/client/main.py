@@ -1,5 +1,8 @@
-import requests, time, os, json, logging
+import json
+import logging
+
 from functions import loadSensors, saveTemperatures, touchServer, updateConfig
+
 logging.basicConfig(filename='log.txt', encoding='utf-8', level=logging.ERROR)
 
 uniqueHash = None

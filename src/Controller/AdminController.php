@@ -6,6 +6,7 @@ use App\Entity\Device;
 use App\Entity\DeviceNotifications;
 use App\Entity\DeviceOptions;
 use App\Entity\User;
+use App\Services\SensorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,11 +23,21 @@ class AdminController extends AbstractController
      */
     private $em;
 
+    /**
+     * @var SensorService $sensorService
+     */
+    private $sensorService;
+
+    /**
+     * @param EntityManagerInterface $em
+     */
     public function __construct(
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        SensorService $sensorService
     )
     {
         $this->em = $em;
+        $this->sensorService = $sensorService;
     }
 
     /**
@@ -53,6 +64,8 @@ class AdminController extends AbstractController
         //loads notifications for specific devices
         $notifications = $this->em->getRepository(DeviceNotifications::class)->findBy(array('parentDevice'=>$deviceIds, 'state'=>false));
 
+        //checks every device activity
+        $this->sensorService->checkEveryDevice();
         return $this->render('admin/dashboard/index.html.twig',[
             'allowedDevices'=>$allowedDevices,
             'waitingDevices'=>$waitingDevices,
@@ -60,5 +73,17 @@ class AdminController extends AbstractController
             'users'=>$users,
             'notifications'=>$notifications
         ]);
+    }
+
+    /**
+     * @Route ("/mail/test", name="mail_test")
+     */
+    public function mail()
+    {
+        return $this->render('email/security/password-change.html.twig', array(
+            'accountName'=>'tewst',
+            'newPassword'=>'test',
+
+        ));
     }
 }

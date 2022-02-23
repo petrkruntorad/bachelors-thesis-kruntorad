@@ -61,7 +61,7 @@ class NotificationController extends AbstractController
                 $this->em->flush();
 
                 $this->addFlash(
-                    'god',
+                    'good',
                     'Oznámení bylo potvrzeno.'
                 );
             }else{
@@ -88,13 +88,14 @@ class NotificationController extends AbstractController
                         );
                     }else{
                         $this->addFlash(
-                            'god',
+                            'good',
                             'Nelze potvrdit oznámení, které nespadá pod Váš účet.'
                         );
                     }
                 }
             }
         }catch (Exception $exception){
+            //in case of exception returns message
             $this->addFlash(
                 'bad',
                 'Nastala neočekávaná vyjímka: '.$exception
@@ -119,9 +120,10 @@ class NotificationController extends AbstractController
                 'Oznámení bylo úspěšně smazáno'
             );
         } catch (Exception $exception) {
+            //in case of exception returns message
             $this->addFlash(
                 'bad',
-                'Nastala neočekávaná vyjímka: ' . $exception
+                'Nastala neočekávaná vyjímka: '.$exception
             );
         }
 

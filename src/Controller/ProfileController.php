@@ -110,9 +110,10 @@ class ProfileController extends AbstractController
             }
             catch (Exception $exception)
             {
+                //in case of exception returns message
                 $this->addFlash(
                     'bad',
-                    'Nastala neočekávaná vyjímka.'
+                    'Nastala neočekávaná vyjímka: '.$exception
                 );
             }
         }else{
@@ -163,8 +164,8 @@ class ProfileController extends AbstractController
                     ]
                 ],
                 'second_options' => [
+                    'label' => 'Heslo znovu',
                     'attr' => [
-                        'label' => 'Heslo znovu',
                         'class'=>'form-control',
                         'placeholder'=>'Heslo znovu',
                         'minlength'=>8
@@ -205,9 +206,10 @@ class ProfileController extends AbstractController
             }
             catch (Exception $exception)
             {
+                //in case of exception returns message
                 $this->addFlash(
                     'bad',
-                    'Nastala neočekávaná vyjímka.'
+                    'Nastala neočekávaná vyjímka: '.$exception
                 );
             }
         }else{
