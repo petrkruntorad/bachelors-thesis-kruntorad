@@ -34,10 +34,12 @@ class MailerService
     public function sendNotificationEmail(string $to, string $message, string $title = null)
     {
         try {
+            //checks if title is set
             if($title == null)
             {
                 $title = 'Měření teplot - oznámení';
             }
+            //email preparation
             $email = (new TemplatedEmail())
                 ->from($this->mailerFrom)
                 ->to(new Address($to))
@@ -47,8 +49,10 @@ class MailerService
                     'title'=>$title,
                     'message'=>$message,
                 ]);
+            //sends email
             $this->mailer->send($email);
         } catch (TransportExceptionInterface $e) {
+            //throws exception in case of error
             throw new Exception($e);
         }
     }
@@ -59,11 +63,12 @@ class MailerService
     public function sendPasswordChangeEmail(string $to, string $accountName, string $newPassword, string $title = null)
     {
         try {
-            dump($this->mailerFrom);
+            //checks if title is set
             if($title == null)
             {
                 $title = 'Změna uživatelského přístupu v aplikace Měření teplot';
             }
+            //email preparation
             $email = (new TemplatedEmail())
                 ->from($this->mailerFrom)
                 ->to(new Address($to))
@@ -74,18 +79,25 @@ class MailerService
                     'accountName'=>$accountName,
                     'newPassword'=>$newPassword
                 ]);
+            //sends email
             $this->mailer->send($email);
         } catch (TransportExceptionInterface $e) {
+            //throws exception in case of error
             throw new Exception($e);
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function sendNewAccountEmail(string $to, string $accountName, string $password, string $title = null)
     {
         try {
+            //checks if title is set
             if($title == null) {
                 $title = 'Vytvoření uživatelského přístupu do aplikace Měření teplot';
             }
+            //email preparation
             $email = (new TemplatedEmail())
                 ->from($this->mailerFrom)
                 ->to($to)
@@ -96,8 +108,10 @@ class MailerService
                     'accountName'=>$accountName,
                     'password'=>$password
                 ]);
+            //sends email
             $this->mailer->send($email);
         } catch (TransportExceptionInterface $e) {
+            //throws exception in case of error
             throw new Exception($e);
         }
     }
