@@ -10,6 +10,7 @@ class UserService
     //generates random password
     function generatePassword(): string
     {
+        //return unique string
         return Uuid::v4()->toBase58();
     }
 }

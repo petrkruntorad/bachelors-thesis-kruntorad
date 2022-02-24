@@ -548,8 +548,10 @@ class DeviceController extends AbstractController
     public function remove(Device $device, $origin)
     {
         try {
+            //loads device options by parent device
             $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device));
 
+            //removes specified device options
             if ($deviceOptions)
             {
                 $this->em->remove($deviceOptions);

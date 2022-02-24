@@ -37,17 +37,21 @@ class SecurityController extends AbstractController
      */
     public function index(AuthenticationUtils $authenticationUtils): Response
     {
+        //loads data from users
         $users = $this->em->getRepository(User::class)->findAll();
 
+        //if users is null redirects to register form
         if(count($users) === 0){
             return $this->redirectToRoute('register');
         }
 
+        //if user is logged automatically redirects to admin
         if($this->isGranted('IS_AUTHENTICATED_FULLY'))
         {
             return $this->redirectToRoute('admin_homepage');
         }
 
+        //gets all errors from login form
         $error = $authenticationUtils->getLastAuthenticationError();
         return $this->render('security/login.html.twig', [
             'error'=> $error,
@@ -59,9 +63,12 @@ class SecurityController extends AbstractController
      */
     public function register(Request $request, UserPasswordHasherInterface $passwordHasher)
     {
+        //loads data from users
         $users = $this->em->getRepository(User::class)->findAll();
 
+        //if number of users is higher than zero regirects to login form
         if(count($users)>0){
+            //returns success message
             $this->addFlash(
                 'bad',
                 'Prvotní registrace byla již provedena.'
@@ -69,6 +76,7 @@ class SecurityController extends AbstractController
             return $this->redirectToRoute('login');
         }
 
+        //init form
         $form = $this->createFormBuilder()
             ->add('email', EmailType::class,[
                 'attr'=>[
@@ -116,34 +124,40 @@ class SecurityController extends AbstractController
 
         $form->handleRequest($request);
 
-
-
+        //if form is submitted and is valid by settings on the backend
         if($form->isSubmitted() && $form->isValid()) {
             try {
+                //assigns values from form to variables
                 $email = $form['email']->getData();
                 $username = $form['username']->getData();
                 $password = $form['password']->getData();
 
+                //inits user object
                 $user = new User();
                 $user->setEmail($email);
                 $user->setUsername($username);
                 $user->setRoles(['ROLE_ADMIN']);
 
+                //hashes password
                 $hashedPassword = $passwordHasher->hashPassword(
                     $user,
                     $password
                 );
 
+                //sets password
                 $user->setPassword($hashedPassword);
 
+                //saves changes
                 $this->em->persist($user);
                 $this->em->flush();
 
+                //returns success message
                 $this->addFlash(
                     'good',
                     'Prvotní registrace proběhla úspěšně.'
                 );
 
+                //redirects to login
                 return $this->redirectToRoute('login');
             }
             catch (Exception $exception)
@@ -155,6 +169,7 @@ class SecurityController extends AbstractController
                 );
             }
         }else{
+            //returns each form error if occurs
             foreach ($form->getErrors(true) as $formError) {
                 $this->addFlash(
                     'bad',

@@ -181,6 +181,7 @@
             var pushvalue = 0;
             var sensorData = []
 
+            //loads sensorids for graphs generation
             const chartIds = {{ sensorIds|striptags|raw|nl2br }};
             chartIds.forEach(device=>{
                 sensorData[device] = []
@@ -222,7 +223,7 @@
                         }
                     }
                 )
-
+                //sets update interval from steps
                 var updateInterval = {{ writeInterval.secondsSteps*1000 }} //Fetch data ever x milliseconds
                 var realtime       = 'on' //If == to on then fetch data every x seconds. else stop fetching
                 function update() {
@@ -266,11 +267,12 @@
                 });
             })
 
+            //fetches data by sensor
             function getData(sensorId) {
                 var sensorDataLength = 0;
+                //generates api url
                 var getDataUrl = "{{ path('sensor_getData',{'id':device.id, 'hardwareId': '_hardwareId_'}) }}/"+pushvalue;
                 getDataUrl = getDataUrl.replace("_hardwareId_", sensorId);
-                console.log(getDataUrl)
                 $.ajax({
                     method: "GET",
                     url: getDataUrl,
@@ -279,7 +281,6 @@
 
                     success: function(data) {
                         temperatures = data.temperatures;
-                        console.log(data.message);
                     }
                 });
                 sensorDataLength = sensorData[sensorId].length - 1
@@ -290,8 +291,6 @@
                     while (sensorData[sensorId].length < totalPoints) {
                         var prev = sensorData[sensorId].length > 0 ? sensorData[sensorDataLength] : 50,
                             y = temperatures[pi];
-
-
                         pi = pi+1;
 
                         sensorData[sensorId].push(y);

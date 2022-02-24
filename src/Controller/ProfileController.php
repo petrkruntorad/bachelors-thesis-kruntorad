@@ -36,14 +36,20 @@ class ProfileController extends AbstractController
      */
     public function update(Request $request, User $user)
     {
+        //checks if current user id and id of account that is edited is same
         if ($user->getId() != $this->getUser()->getId())
         {
+            //throws error message
             $this->addFlash(
                 'bad',
                 'Nelze editovat jiné uživatelské profily.'
             );
+
+            //redirects back to current user profile
             return $this->redirectToRoute('profile_update',['id'=>$this->getUser()->getId()]);
         }
+
+        //inits form
         $form = $this->createFormBuilder($user)
             ->add('email', EmailType::class,[
                 'label'=> 'E-mail',
@@ -72,36 +78,45 @@ class ProfileController extends AbstractController
         $form->handleRequest($request);
 
 
-
+        //if form is submitted and is valid by settings on the backend
         if($form->isSubmitted() && $form->isValid()) {
             try {
+                //inits varaible unique with default value
                 $unique = true;
+                //inits variable with data from form
                 $email = $form->getData('email');
                 $username = $form->getData('username');
+                //checks if in database exist user with specified username
                 $existingUsers = $this->em->getRepository(User::class)->findBy(array('username'=>$username));
+                //user with specified username exist
                 if(count($existingUsers)>0)
                 {
+                    //iterates each record with specified username
                     foreach ($existingUsers as $existingUser){
+                        //if current user id and email is not same as record returns false
                         if($existingUser->getId() != $user->getId() && $existingUser->getEmail() == $email)
                         {
                             $unique = false;
                         }
+                        //if current user id and username is not same as record returns false
                         if($existingUser->getId() != $user->getId() && $existingUser->getUserIdentifier() == $username)
                         {
                             $unique = false;
                         }
                     }
                 }
-
+                //if username is unique saves changes
                 if($unique){
                     $this->em->persist($user);
                     $this->em->flush();
 
+                    //returns success message
                     $this->addFlash(
                         'good',
                         'Údaje byly úspěšně uloženy.'
                     );
                 }else{
+                    //returns error message
                     $this->addFlash(
                         'bad',
                         'Uživatelské jméno nebo heslo je zabrané.'
@@ -117,6 +132,7 @@ class ProfileController extends AbstractController
                 );
             }
         }else{
+            //returns each form error if occurs
             foreach ($form->getErrors(true) as $formError) {
                 $this->addFlash(
                     'bad',
@@ -137,16 +153,18 @@ class ProfileController extends AbstractController
      */
     public function password_change(Request $request, UserPasswordHasherInterface $passwordHasher, User $user)
     {
-
+        //checks if current user id and id of account that is edited is same
         if ($user->getId() != $this->getUser()->getId())
         {
+            //returns error message
             $this->addFlash(
                 'bad',
                 'Nelze měnit hesla jiným uživatelům.'
             );
+            //redirects back to current user password change
             return $this->redirectToRoute('profile_password_change',['id'=>$this->getUser()->getId()]);
         }
-
+        //inits form
         $form = $this->createFormBuilder()
             ->add('password', RepeatedType::class,[
                 'type' => PasswordType::class,
@@ -183,22 +201,26 @@ class ProfileController extends AbstractController
         $form->handleRequest($request);
 
 
-
+        //if form is submitted and is valid by settings on the backend
         if($form->isSubmitted() && $form->isValid()) {
             try {
-
+                //assigns value from form
                 $password = $form['password']->getData();
 
+                //hashes password
                 $hashedPassword = $passwordHasher->hashPassword(
                     $user,
                     $password
                 );
 
+                //sets hashed password to database
                 $user->setPassword($hashedPassword);
 
+                //saves changes
                 $this->em->persist($user);
                 $this->em->flush();
 
+                //returns error message
                 $this->addFlash(
                     'good',
                     'Heslo bylo úšpěšně změněno'
@@ -213,6 +235,7 @@ class ProfileController extends AbstractController
                 );
             }
         }else{
+            //returns each form error if occurs
             foreach ($form->getErrors(true) as $formError) {
                 $this->addFlash(
                     'bad',

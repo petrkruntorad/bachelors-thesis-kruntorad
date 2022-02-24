@@ -25,6 +25,7 @@ class DeviceService
      */
     private $router;
 
+    //inits array with default value for write interval
     /**
      * @var array[] $writeIntervalSettings
      */
@@ -42,28 +43,42 @@ class DeviceService
         $this->router = $router;
     }
 
+    /**
+     * @throws Exception
+     */
     public function generateConfigFile(Device $device)
     {
         $fileContent = [];
+        try {
+            //loads options for specified device
+            $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device));
 
-        $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device));
+            //sets values with specified keys to array
+            $fileContent['uniqueHash'] = $device->getUniqueHash();
+            $fileContent['writeInterval'] = $deviceOptions->getWriteInterval();
+            $fileContent['writeUrl'] = $this->router->generate('device_write_data', array(), UrlGeneratorInterface::ABSOLUTE_URL);
+            $fileContent['updateUrl'] = $this->router->generate('device_getUpdates', array(), UrlGeneratorInterface::ABSOLUTE_URL);
+            $fileContent['touchUrl'] = $this->router->generate('device_touch', array(), UrlGeneratorInterface::ABSOLUTE_URL);
 
-        $fileContent['uniqueHash'] = $device->getUniqueHash();
-        $fileContent['writeInterval'] = $deviceOptions->getWriteInterval();
-        $fileContent['writeUrl'] = $this->router->generate('device_write_data', array(), UrlGeneratorInterface::ABSOLUTE_URL);
-        $fileContent['updateUrl'] = $this->router->generate('device_getUpdates', array(), UrlGeneratorInterface::ABSOLUTE_URL);
-        $fileContent['touchUrl'] = $this->router->generate('device_touch', array(), UrlGeneratorInterface::ABSOLUTE_URL);
+            //returns json with correct formatting
+            return json_encode($fileContent, JSON_UNESCAPED_UNICODE);
+        } catch (Exception $exception) {
+            //throws exception if error occurts
+            throw new Exception($exception);
+        }
 
-        return json_encode($fileContent, JSON_UNESCAPED_UNICODE);
     }
 
     public function getWriteIntervals()
     {
         $writeIntervals = [];
+        //checks if write interval settings are set
         if ($this->writeIntervalSettings)
         {
+            //iterates each item in array
             foreach($this->writeIntervalSettings as $writeIntervalSetting)
             {
+                //gets cron and sets it to array
                 $writeIntervals[$writeIntervalSetting['description']] = $writeIntervalSetting['cron'];
             }
         }
@@ -73,12 +88,16 @@ class DeviceService
     public function getWriteParametersForCron(string $cron)
     {
         $writeParameters = [];
+        //checks if write interval settings are set
         if ($this->writeIntervalSettings)
         {
+            //iterates each item in array
             foreach($this->writeIntervalSettings as $writeIntervalSetting)
             {
+                //checks if cron value was provided
                 if($writeIntervalSetting['cron'] == $cron)
                 {
+                    //sets values with keys to array
                     $writeParameters['description'] = $writeIntervalSetting['description'];
                     $writeParameters['cron'] = $writeIntervalSetting['cron'];
                     $writeParameters['secondsSteps'] = $writeIntervalSetting['secondsSteps'];
@@ -95,7 +114,9 @@ class DeviceService
     public function hasConfiguration(Device $device)
     {
         try {
+            //loads options for device
             $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device));
+            //if device options exists
             if($deviceOptions)
             {
                 return true;

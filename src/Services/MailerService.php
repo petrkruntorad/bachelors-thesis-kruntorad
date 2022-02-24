@@ -28,6 +28,9 @@ class MailerService
         $this->mailerFrom = $mailerFrom;
     }
 
+    /**
+     * @throws Exception
+     */
     public function sendNotificationEmail(string $to, string $message, string $title = null)
     {
         try {
@@ -50,6 +53,9 @@ class MailerService
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function sendPasswordChangeEmail(string $to, string $accountName, string $newPassword, string $title = null)
     {
         try {

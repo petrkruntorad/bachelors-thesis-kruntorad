@@ -30,6 +30,7 @@ class SensorService
     /**
      * @param EntityManagerInterface $em
      * @param DeviceService $ds
+     * @param NotificationService $notificationService
      */
     public function __construct(
         EntityManagerInterface $em,
@@ -105,6 +106,9 @@ class SensorService
         return false;
     }
 
+    /**
+     * @throws InternalErrorException
+     */
     public function checkEveryDevice()
     {
         try {
@@ -125,6 +129,7 @@ class SensorService
             }
 
         }catch (Exception $exception){
+            //throws internal exception in case that error occurs
             throw new InternalErrorException($exception);
         }
     }

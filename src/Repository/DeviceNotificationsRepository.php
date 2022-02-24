@@ -18,7 +18,7 @@ class DeviceNotificationsRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, DeviceNotifications::class);
     }
-    
+
     // /**
     //  * @return Sensor[] Returns an array of Sensor objects
     //  */
