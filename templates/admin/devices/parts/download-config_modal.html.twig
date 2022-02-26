@@ -9,8 +9,19 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p>Pro stažení instalačních souborů lze na požadovaném zařízení využít tento příkaz.</p>
-                    <code>wget -O install.zip <span id="downloadUrl"></span>;<br>unzip -o install.zip;<br>pip install python-crontab</code>
+                    <div class="row">
+                        <p>Pro stažení instalačních souborů lze na požadovaném zařízení využít tento příkaz.</p>
+                        <div class="col-10">
+                            <code id="installCommands">wget -O install.zip <span id="downloadUrl"></span>;<br>unzip -o install.zip;<br>pip install python-crontab</code>
+                        </div>
+                        <div class="col-2 d-flex align-items-center">
+                            <button class="btn btn-default" onclick="copyCommands()"  id="copyBtn">
+                                Zkopírovat
+                            </button>
+                        </div>
+                    </div>
+
+
                 </div>
                 <div class="modal-footer justify-content-between">
                     <a href="#" class="btn btn-default" id="downloadConfigBtn">Stáhnout zde</a>
@@ -25,6 +36,26 @@
 {% endblock %}
 {% block javascripts %}
     <script>
+        function copyCommands() {
+            /* Get the text field */
+            var copyText = document.getElementById("installCommands");
+
+            /* Copy the text inside the text field */
+            navigator.clipboard.writeText(copyText.innerText);
+
+            var copyBtn = document.getElementById("copyBtn");
+            copyBtn.innerText = "Zkopírováno!";
+            copyBtn.classList.remove("btn-default");
+            copyBtn.classList.add("btn-success");
+
+            setTimeout(setCopyBtnDefault, 2000)
+        }
+        function setCopyBtnDefault(){
+            var copyBtn = document.getElementById("copyBtn");
+            copyBtn.innerText = "Zkopírovat";
+            copyBtn.classList.remove("btn-success");
+            copyBtn.classList.add("btn-default");
+        }
         function showModal(configUrl){
             $("#modal-default").modal().show();
             $("#modal-default #downloadUrl").text(configUrl);
