@@ -12,6 +12,7 @@ parentDirectory = os.path.dirname(os.path.realpath(__file__))
 mainScriptPath = parentDirectory + "/main.py"
 cron = CronTab(user='root')
 
+#checks if cron job is already created
 def checkIfCronJobExist(comment: str):
     try:
         #iterates cron jobs
@@ -23,6 +24,7 @@ def checkIfCronJobExist(comment: str):
     except RuntimeError as exception:
         logging.error("Internal error: " + str(exception))
 
+#creates new cron job
 def setCronJob(interval: str):
     try:
         #checks if cronjob exists
@@ -37,6 +39,7 @@ def setCronJob(interval: str):
     except RuntimeError as exception:
         logging.error("Internal error: " + str(exception))
 
+#updates existing cron job
 def updateCronJob(interval: str):
     try:
         #looks for cronjob with specified comment
@@ -48,6 +51,7 @@ def updateCronJob(interval: str):
     except RuntimeError as exception:
         logging.error("Internal error: " + str(exception))
 
+#loads MAC address for main network interface
 def getMainNetworkInterfaceMacAdress():
     try:
         #loads information about network interface
@@ -65,9 +69,10 @@ def getMainNetworkInterfaceMacAdress():
     except RuntimeError as exception:
         logging.error("Internal error: " + str(exception))
 
+#gets IP address of device
 def getIpAddress():
     try:
-        #sets cokect
+        #sets socket
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         #connects to 8.8.8.8 to get local IP address
         s.connect(("8.8.8.8", 80))
@@ -76,6 +81,7 @@ def getIpAddress():
     except RuntimeError as exception:
         logging.error("Internal error: " + str(exception))
 
+#updates informations about device on server
 def touchServer(uniqueHash: str, touchUrl: str):
     try:
         #assigns values to variables
@@ -94,6 +100,7 @@ def touchServer(uniqueHash: str, touchUrl: str):
     except RuntimeError as exception:
         logging.error("Internal error: " + str(exception))
 
+#gets new config from server
 def updateConfig(uniqueHash: str, updateUrl: str, configData):
     #prepares data
     postData = {'uniqueHash': uniqueHash}
@@ -118,6 +125,7 @@ def updateConfig(uniqueHash: str, updateUrl: str, configData):
         print(response.content)
         print(response.status_code)
 
+#loads every connected sensor
 def loadSensors():
     try:
         #loads sensors with their names
@@ -130,6 +138,7 @@ def loadSensors():
     except RuntimeError as exception:
         logging.error("Internal error: " + str(exception))
 
+#saves temperatures to server
 def saveTemperatures(sensors: list, writeUrl: str, uniqueHash: str):
     try:
         #go through every sensor in array
@@ -158,4 +167,3 @@ def saveTemperatures(sensors: list, writeUrl: str, uniqueHash: str):
                 raise ValueError("Temperature is missing.")
     except RuntimeError as exception:
         logging.error("Internal error: " + str(exception))
-
