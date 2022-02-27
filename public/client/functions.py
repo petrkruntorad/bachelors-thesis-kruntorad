@@ -102,8 +102,10 @@ def touchServer(uniqueHash: str, touchUrl: str):
 
 #gets new config from server
 def updateConfig(uniqueHash: str, updateUrl: str, configData):
+    #gets MAC address
+    macAddress = getMainNetworkInterfaceMacAdress()
     #prepares data
-    postData = {'uniqueHash': uniqueHash}
+    postData = {'uniqueHash': uniqueHash, 'macAddress': macAddress}
     #sends data to api
     response = requests.post(updateUrl, data=postData)
     #checks if status code is 200
@@ -141,6 +143,8 @@ def loadSensors():
 #saves temperatures to server
 def saveTemperatures(sensors: list, writeUrl: str, uniqueHash: str):
     try:
+        # gets MAC address
+        macAddress = getMainNetworkInterfaceMacAdress()
         #go through every sensor in array
         for singleSensor in sensors:
             #loads values from sensors
@@ -158,7 +162,7 @@ def saveTemperatures(sensors: list, writeUrl: str, uniqueHash: str):
             if temperature:
                 session = requests.Session()
                 # prepares data
-                data = {'sensorId': singleSensor, 'rawSensorData': temperature, 'uniqueHash': uniqueHash}
+                data = {'sensorId': singleSensor, 'rawSensorData': temperature, 'uniqueHash': uniqueHash, 'macAddress': macAddress}
                 #sends data to api
                 insert_request = session.post(url=writeUrl, data=data)
                 #prints response

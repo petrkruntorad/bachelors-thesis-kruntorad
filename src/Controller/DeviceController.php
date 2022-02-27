@@ -690,6 +690,11 @@ class DeviceController extends AbstractController
             {
                 throw new Exception("Unique hash is missing.");
             }
+            //checks if MAC address is defined
+            if (!$_POST['macAddress'])
+            {
+                throw new Exception("MAC address is missing.");
+            }
             //checks if sensor ID is defined
             if (!$_POST['sensorId'])
             {
@@ -704,19 +709,20 @@ class DeviceController extends AbstractController
             //assigns values from post to variables
             $sensorId = strval($_POST['sensorId']);
             $uniqueHash = strval($_POST['uniqueHash']);
+            $macAddress = strval($_POST['macAddress']);
             $rawSensorData = floatval($_POST['rawSensorData']);
 
             //checks if device with specified unique hash exists
-            $device = $this->em->getRepository(Device::class)->findOneBy(array('uniqueHash'=>$uniqueHash));
-
-            //gets options for device
-            $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device));
+            $device = $this->em->getRepository(Device::class)->findOneBy(array('uniqueHash'=>$uniqueHash,'macAddress'=>$macAddress));
 
             //if device is not defined throws exception
             if (!$device)
             {
-                throw new Exception("No such device with a specified unique hash.");
+                throw new Exception("No such device with a specified unique hash or MAC address.");
             }
+
+            //gets options for device
+            $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$device));
 
             //if device is not defined throws exception
             if (!$deviceOptions)
@@ -816,8 +822,10 @@ class DeviceController extends AbstractController
             //sets current datetime as last connection
             $device->setLastConnection(new \DateTime("now"));
 
-            //sets MAC address
-            $device->setMacAddress($macAddress);
+            //sets MAC address if is not set
+            if($device->getMacAddress() == NULL) {
+                $device->setMacAddress($macAddress);
+            }
 
             //checks if IP address is defined and then adds it to database
             if($_POST['ipAddress']){
@@ -854,8 +862,18 @@ class DeviceController extends AbstractController
             }
             //assigns uniqueHash to variable
             $uniqueHash = strval($_POST['uniqueHash']);
+
+            //checks if macAddress is defined
+            if (!$_POST['macAddress'])
+            {
+                //throws an exception in case that unique hash is missing
+                throw new Exception("MAC address is missing.");
+            }
+            //assigns macAddress to variable
+            $macAddress = strval($_POST['macAddress']);
+
             //checks if device with specified uniqueHash is in database
-            $device = $this->em->getRepository(Device::class)->findOneBy(array('uniqueHash'=>$uniqueHash));
+            $device = $this->em->getRepository(Device::class)->findOneBy(array('uniqueHash'=>$uniqueHash,'macAddress'=>$macAddress));
 
             //if device is not defined throws exception
             if (!$device)
