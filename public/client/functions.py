@@ -1,48 +1,50 @@
-import os, requests, logging
+import logging
+import os
+import requests
 import socket
-
 from crontab import CronTab
-logging.basicConfig(filename='log.txt', encoding='utf-8', level=logging.ERROR)
 
+logging.basicConfig(filename='log.txt', encoding='utf-8', level=logging.ERROR)
 # variables
-sensors = []
-temperature = None
 rowComment = 'writeTemperature'
 parentDirectory = os.path.dirname(os.path.realpath(__file__))
 mainScriptPath = parentDirectory + "/main.py"
 cron = CronTab(user='root')
 
-#checks if cron job is already created
+
+# checks if cron job is already created
 def checkIfCronJobExist(comment: str):
     try:
-        #iterates cron jobs
+        # iterates cron jobs
         for job in cron:
-            #checks if cron job with specified comment exists
+            # checks if cron job with specified comment exists
             if job.comment == comment:
                 return True
         return False
     except RuntimeError as exception:
         logging.error("Internal error: " + str(exception))
 
-#creates new cron job
+
+# creates new cron job
 def setCronJob(interval: str):
     try:
-        #checks if cronjob exists
+        # checks if cronjob exists
         if checkIfCronJobExist(rowComment):
-            #updates cronjob
+            # updates cronjob
             updateCronJob(interval)
         else:
-            #creates new cronjob for main script
+            # creates new cronjob for main script
             job = cron.new(command='python ' + mainScriptPath, comment=rowComment)
             job.setall(interval)
             cron.write()
     except RuntimeError as exception:
         logging.error("Internal error: " + str(exception))
 
-#updates existing cron job
+
+# updates existing cron job
 def updateCronJob(interval: str):
     try:
-        #looks for cronjob with specified comment
+        # looks for cronjob with specified comment
         for job in cron:
             if job.comment == rowComment:
                 job.setall(interval)
@@ -51,121 +53,130 @@ def updateCronJob(interval: str):
     except RuntimeError as exception:
         logging.error("Internal error: " + str(exception))
 
-#loads MAC address for main network interface
+
+# loads MAC address for main network interface
 def getMainNetworkInterfaceMacAdress():
     try:
-        #loads information about network interface
-        cmdipa = os.popen('ip a | grep link/ether').read()
-        #splits lines
-        cmdipa = cmdipa.splitlines()
+        # loads information about network interface
+        cmdIpa = os.popen('ip a | grep link/ether').read()
+        # splits lines
+        cmdIpa = cmdIpa.splitlines()
         allMacAddresses = []
-        #iterates through lines and splits them by space
-        for mac in cmdipa:
+        # iterates through lines and splits them by space
+        for mac in cmdIpa:
             mac = mac.split(' ')
-            #sets mac address to array
+            # sets mac address to array
             allMacAddresses.append(mac[5])
-        #returns mac address
+        # returns mac address
         return allMacAddresses[0]
     except RuntimeError as exception:
         logging.error("Internal error: " + str(exception))
 
-#gets IP address of device
+
+# gets IP address of device
 def getIpAddress():
     try:
-        #sets socket
+        # sets socket
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        #connects to 8.8.8.8 to get local IP address
+        # connects to 8.8.8.8 to get local IP address
         s.connect(("8.8.8.8", 80))
-        #returns local IP address
+        # returns local IP address
         return socket.gethostbyname(s.getsockname()[0])
     except RuntimeError as exception:
         logging.error("Internal error: " + str(exception))
 
-#updates informations about device on server
+
+# updates information about device on server
 def touchServer(uniqueHash: str, touchUrl: str):
     try:
-        #assigns values to variables
+        # assigns values to variables
         macAddress = getMainNetworkInterfaceMacAdress()
         ipAddress = getIpAddress()
 
         session = requests.Session()
-        #prepares data
-        data = {'uniqueHash': uniqueHash, 'macAddress': macAddress, 'ipAddress':ipAddress}
+        # prepares data
+        data = {'uniqueHash': uniqueHash, 'macAddress': macAddress, 'ipAddress': ipAddress}
 
-        #sends data to api
+        # sends data to api
         request = session.post(url=touchUrl, data=data)
 
-        #returns status
+        # returns status
         return request.text
     except RuntimeError as exception:
         logging.error("Internal error: " + str(exception))
 
-#gets new config from server
+
+# gets new config from server
 def updateConfig(uniqueHash: str, updateUrl: str, configData):
-    #gets MAC address
+    # gets MAC address
     macAddress = getMainNetworkInterfaceMacAdress()
-    #prepares data
+    # prepares data
     postData = {'uniqueHash': uniqueHash, 'macAddress': macAddress}
-    #sends data to api
+    # sends data to api
     response = requests.post(updateUrl, data=postData)
-    #checks if status code is 200
+    # checks if status code is 200
     if response.status_code == 200:
-        #gets content
+        # gets content
         data = response.content
-        #prepares path to config
+        # prepares path to config
         pathToConfig = parentDirectory + '/config.json'
-        #writes content
+        # writes content
         with open(pathToConfig, 'wb') as s:
             s.write(data)
         if 'writeInterval' in configData.keys():
-            #updates cron
+            # updates cron
             updateCronJob(configData['writeInterval'])
         else:
             logging.error("Write interval is missing in config file.")
     else:
-        #prints responses
+        # prints responses
         print(response.content)
         print(response.status_code)
 
-#loads every connected sensor
+
+# loads every connected sensor
 def loadSensors():
     try:
-        #loads sensors with their names
+        sensors = []
+        # loads sensors with their names
         cmdLs = os.popen('ls /sys/bus/w1/devices/ | grep ^28').read()
         cmdLs = cmdLs.splitlines()
-        for id in cmdLs:
-            #adds sensor ids to array
-            sensors.append(id)
+        for sensorId in cmdLs:
+            # adds sensor ids to array
+            sensors.append(sensorId)
         return sensors
     except RuntimeError as exception:
         logging.error("Internal error: " + str(exception))
 
-#saves temperatures to server
+
+# saves temperatures to server
 def saveTemperatures(sensors: list, writeUrl: str, uniqueHash: str):
     try:
+        temperature = None
         # gets MAC address
         macAddress = getMainNetworkInterfaceMacAdress()
-        #go through every sensor in array
+        # go through every sensor in array
         for singleSensor in sensors:
-            #loads values from sensors
+            # loads values from sensors
             with open("/sys/bus/w1/devices/" + singleSensor + "/w1_slave", "r") as file:
                 for line in file:
                     if "t=" in line:
                         lineSplit = line.split(" ")
-                        #iterates through values
+                        # iterates through values
                         for value in lineSplit:
                             if value.startswith("t="):
-                                #gets correct value by dividing with 1000
+                                # gets correct value by dividing with 1000
                                 temperature = float(value[2:]) / 1000
                                 print(temperature)
-            #if temperature is defined
+            # if temperature is defined
             if temperature:
                 session = requests.Session()
                 # prepares data
-                data = {'sensorId': singleSensor, 'rawSensorData': temperature, 'uniqueHash': uniqueHash, 'macAddress': macAddress}
-                #sends data to api
+                data = {'sensorId': singleSensor, 'rawSensorData': temperature, 'uniqueHash': uniqueHash,
+                        'macAddress': macAddress}
+                # sends data to api
                 insert_request = session.post(url=writeUrl, data=data)
-                #prints response
+                # prints response
                 print(insert_request.text)
             else:
                 raise ValueError("Temperature is missing.")
