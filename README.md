@@ -1,6 +1,6 @@
 # Bachelor's thesis - Petr Kruntorád
 
-This repository contains a bachelor's thesis focused on remote measuring of temperatures with the usage of Raspberry Pi.
+This repository contains a bachelor's thesis focused on remote measuring of temperatures with the usage of Raspberry Pi. Web administration is using template AdminLTE with Symfony used for backend.
 
 Used technologies:
 - Symfony 5.3.15
