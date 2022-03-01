@@ -152,11 +152,11 @@ def loadSensors():
 # saves temperatures to server
 def saveTemperatures(sensors: list, writeUrl: str, uniqueHash: str):
     try:
-        temperature = None
         # gets MAC address
         macAddress = getMainNetworkInterfaceMacAdress()
         # go through every sensor in array
         for singleSensor in sensors:
+            temperature = None
             # loads values from sensors
             with open("/sys/bus/w1/devices/" + singleSensor + "/w1_slave", "r") as file:
                 for line in file:

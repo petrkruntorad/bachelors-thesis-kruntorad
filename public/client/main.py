@@ -22,7 +22,7 @@ try:
     if 'writeUrl' in configData.keys():
         writeUrl = configData['writeUrl']
     else:
-        raise ValueError("Target URL is missing in config file.")
+        raise ValueError("Write URL is missing in config file.")
     if 'uniqueHash' in configData.keys():
         uniqueHash = configData['uniqueHash']
     else:
@@ -30,11 +30,11 @@ try:
     if 'touchUrl' in configData.keys():
         touchUrl = configData['touchUrl']
     else:
-        raise ValueError("Unique hash is missing in config file.")
+        raise ValueError("Touch URL is missing in config file.")
     if 'updateUrl' in configData.keys():
         updateUrl = configData['updateUrl']
     else:
-        raise ValueError("Unique hash is missing in config file.")
+        raise ValueError("Update URL is missing in config file.")
 
     # updates info about device on api
     touchServer(uniqueHash, touchUrl)
