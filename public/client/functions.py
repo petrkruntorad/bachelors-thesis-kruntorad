@@ -2,6 +2,7 @@ import logging
 import os
 import requests
 import socket
+import json
 from crontab import CronTab
 
 logging.basicConfig(filename='log.txt', encoding='utf-8', level=logging.ERROR)
@@ -107,7 +108,7 @@ def touchServer(uniqueHash: str, touchUrl: str):
 
 
 # gets new config from server
-def updateConfig(uniqueHash: str, updateUrl: str, configData):
+def updateConfig(uniqueHash: str, updateUrl: str):
     # gets MAC address
     macAddress = getMainNetworkInterfaceMacAdress()
     # prepares data
@@ -123,6 +124,12 @@ def updateConfig(uniqueHash: str, updateUrl: str, configData):
         # writes content
         with open(pathToConfig, 'wb') as s:
             s.write(data)
+
+        # prepares new config
+        configFile = open('config.json')
+        # loads config from new file file
+        configData = json.load(configFile)
+
         if 'writeInterval' in configData.keys():
             # updates cron
             updateCronJob(configData['writeInterval'])

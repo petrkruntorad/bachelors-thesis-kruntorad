@@ -39,7 +39,7 @@ try:
     # updates info about device on api
     touchServer(uniqueHash, touchUrl)
     # updates config
-    updateConfig(uniqueHash, updateUrl, configData)
+    updateConfig(uniqueHash, updateUrl)
     # writes temperatures
     saveTemperatures(sensors, writeUrl, uniqueHash)
 except FileNotFoundError as exception:
