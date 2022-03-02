@@ -56,7 +56,7 @@ def updateCronJob(interval: str):
 
 
 # loads MAC address for main network interface
-def getMainNetworkInterfaceMacAdress():
+def getMainNetworkInterfaceMacAddress():
     try:
         # loads information about network interface
         cmdIpa = os.popen('ip a | grep link/ether').read()
@@ -91,7 +91,7 @@ def getIpAddress():
 def touchServer(uniqueHash: str, touchUrl: str):
     try:
         # assigns values to variables
-        macAddress = getMainNetworkInterfaceMacAdress()
+        macAddress = getMainNetworkInterfaceMacAddress()
         ipAddress = getIpAddress()
 
         session = requests.Session()
@@ -110,7 +110,7 @@ def touchServer(uniqueHash: str, touchUrl: str):
 # gets new config from server
 def updateConfig(uniqueHash: str, updateUrl: str):
     # gets MAC address
-    macAddress = getMainNetworkInterfaceMacAdress()
+    macAddress = getMainNetworkInterfaceMacAddress()
     # prepares data
     postData = {'uniqueHash': uniqueHash, 'macAddress': macAddress}
     # sends data to api
@@ -160,7 +160,7 @@ def loadSensors():
 def saveTemperatures(sensors: list, writeUrl: str, uniqueHash: str):
     try:
         # gets MAC address
-        macAddress = getMainNetworkInterfaceMacAdress()
+        macAddress = getMainNetworkInterfaceMacAddress()
         # go through every sensor in array
         for singleSensor in sensors:
             temperature = None
