@@ -8,4 +8,3 @@ Used technologies:
 - Raspberry Pi 3B+
 - Tester Sensors 
   - DS18B20
-  - LM35DZ
