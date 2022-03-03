@@ -74,16 +74,4 @@ class AdminController extends AbstractController
             'notifications'=>$notifications
         ]);
     }
-
-    /**
-     * @Route ("/mail/test", name="mail_test")
-     */
-    public function mail()
-    {
-        return $this->render('email/security/password-change.html.twig', array(
-            'accountName'=>'tewst',
-            'newPassword'=>'test',
-
-        ));
-    }
 }
