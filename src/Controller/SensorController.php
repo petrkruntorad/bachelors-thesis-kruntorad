@@ -7,6 +7,7 @@ use App\Entity\SensorData;
 use App\Services\DeviceService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -27,6 +28,7 @@ class SensorController extends AbstractController
 
     /**
      * @Route("/admin/sensor/remove/{id}/{origin}", name="sensor_remove")
+     * @IsGranted("ROLE_ADMIN")
      */
     public function remove(Sensor $sensor, string $origin)
     {
