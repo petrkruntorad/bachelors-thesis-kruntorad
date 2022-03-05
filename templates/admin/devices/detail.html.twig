@@ -75,8 +75,10 @@
                             {% endif %}
                             <dt>Poznámka:</dt>
                             <dd>{{ device.note }}</dd>
-                            <dt>Unikátní klíč:</dt>
-                            <dd>{{ device.uniqueHash }}</dd>
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <dt>Unikátní klíč:</dt>
+                                <dd>{{ device.uniqueHash }}</dd>
+                            {% endif %}
                             <dt>Interval zápisu:</dt>
                             <dd>
                                 {% if writeInterval is defined and writeInterval is not empty %}
