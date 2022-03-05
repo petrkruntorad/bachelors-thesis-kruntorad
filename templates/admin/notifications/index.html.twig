@@ -99,7 +99,7 @@
                                                     <td class="text-center">
                                                         {% if notification.state == true %}
                                                             <a href="{{ path('notifications_confirm',{'id':notification.id,'origin':app.request.attributes.get('_route')}) }}"
-                                                               title="Deaktivovat" class="text-danger m-2">
+                                                               title="Zrušit potvrzení" class="text-danger m-2">
                                                                 <i class="fa-fw fas fa-times"></i>
                                                             </a>
                                                         {% else %}
