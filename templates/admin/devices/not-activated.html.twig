@@ -65,7 +65,9 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Název</th>
-                                    <th>Akce</th>
+                                    {% if is_granted('ROLE_ADMIN') %}
+                                        <th>Akce</th>
+                                    {% endif %}
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -76,19 +78,19 @@
                                             <td>
                                                 {{ device.name }}
                                             </td>
-                                            <td>
-                                                {% if devicesConfig is defined and devicesConfig is not empty %}
-                                                    {% for deviceConfig in devicesConfig %}
-                                                        {% if deviceConfig.id == device.id %}
-                                                            <a href="#" title="Stáhnout konfigurační soubory"
-                                                               class="m-2 text-info get-config"
-                                                               onclick="showModal('{{ url('devices_get_config',{'id':device.id})|e('js') }}');">
-                                                                <i class="fa-fw fa fa-download" aria-hidden="true"></i>
-                                                            </a>
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                {% endif %}
-                                                {% if is_granted('ROLE_ADMIN') %}
+                                            {% if is_granted('ROLE_ADMIN') %}
+                                                <td>
+                                                    {% if devicesConfig is defined and devicesConfig is not empty %}
+                                                        {% for deviceConfig in devicesConfig %}
+                                                            {% if deviceConfig.id == device.id %}
+                                                                <a href="#" title="Stáhnout konfigurační soubory"
+                                                                   class="m-2 text-info get-config"
+                                                                   onclick="showModal('{{ url('devices_get_config',{'id':device.id})|e('js') }}');">
+                                                                    <i class="fa-fw fa fa-download" aria-hidden="true"></i>
+                                                                </a>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    {% endif %}
                                                     <a href="{{ path('devices_update',{'id':device.id,'origin':app.request.attributes.get('_route')}) }}"
                                                        title="Editovat zařízení" class="m-2">
                                                         <i class="fa-fw fas fa-pen"></i>
@@ -102,8 +104,8 @@
                                                        onclick="return confirm('Opravdu si přejete smazat toto zařízení se všemi senzory a daty? Tato operace je nevratná.')">
                                                         <i class="fa-fw fas fa-trash"></i>
                                                     </a>
-                                                {% endif %}
-                                            </td>
+                                                </td>
+                                            {% endif %}
                                         </tr>
                                     {% endfor %}
                                 {% endif %}
@@ -112,7 +114,9 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Název</th>
-                                    <th>Akce</th>
+                                    {% if is_granted('ROLE_ADMIN') %}
+                                        <th>Akce</th>
+                                    {% endif %}
                                 </tr>
                                 </tfoot>
                             </table>
@@ -129,7 +133,9 @@
         <!-- /.container-fluid -->
     </section>
     <!-- /.content -->
-    {% include 'admin/devices/parts/download-config_modal.html.twig' %}
+    {% if is_granted('ROLE_ADMIN') %}
+        {% include 'admin/devices/parts/download-config_modal.html.twig' %}
+    {% endif %}
 {% endblock %}
 {% block stylesheets %}
     {{ parent() }}
@@ -155,7 +161,7 @@
     <script src="{{ asset('plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
     <script>
         $(function () {
-            var visible = [1]
+            var visible = [0,1]
             var fileTitle = "Neaktivovaná zařízení"
             $("#devices").DataTable({
                 "responsive": true, "lengthChange": false, "autoWidth": false,
