@@ -109,10 +109,13 @@ class SensorService
     /**
      * @throws InternalErrorException
      */
-    public function checkEveryDevice()
+    public function checkEveryAllowedDevice()
     {
         try {
-            $sensors = $this->em->getRepository(Sensor::class)->findAll();
+            //loads devices where isAllowed is set to 1 from database
+            $devices = $this->em->getRepository(Device::class)->findBy(['isAllowed'=>1]);
+            //loads sensors where device is allowed
+            $sensors = $this->em->getRepository(Sensor::class)->findBy(['parentDevice'=>$devices]);
             foreach ($sensors as $key => $sensor)
             {
                 if(!$this->isSensorActive($sensor->getId())){

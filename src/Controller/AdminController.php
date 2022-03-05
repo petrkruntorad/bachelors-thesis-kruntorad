@@ -64,8 +64,8 @@ class AdminController extends AbstractController
         //loads notifications for specific devices
         $notifications = $this->em->getRepository(DeviceNotifications::class)->findBy(array('parentDevice'=>$deviceIds, 'state'=>false));
 
-        //checks every device activity
-        $this->sensorService->checkEveryDevice();
+        //checks every allowed device activity
+        $this->sensorService->checkEveryAllowedDevice();
         return $this->render('admin/dashboard/index.html.twig',[
             'allowedDevices'=>$allowedDevices,
             'waitingDevices'=>$waitingDevices,

@@ -849,8 +849,8 @@ class DeviceController extends AbstractController
             $this->em->persist($device);
             $this->em->flush();
 
-            //checks every device activity
-            $this->sensorService->checkEveryDevice();
+            //checks every allowed device activity
+            $this->sensorService->checkEveryAllowedDevice();
 
             return new Response('Success');
         }
