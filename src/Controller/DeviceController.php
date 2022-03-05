@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Device;
+use App\Entity\DeviceNotifications;
 use App\Entity\DeviceOptions;
 use App\Entity\Sensor;
 use App\Entity\SensorData;
@@ -557,6 +558,19 @@ class DeviceController extends AbstractController
                 $this->em->remove($deviceOptions);
                 $this->em->flush();
             }
+            //loads every notification for device
+            $notifications = $this->em->getRepository(DeviceNotifications::class)->findBy(array('parentDevice'=>$device));
+            //checks if notifications exists
+            if($notifications){
+                //iterates each notification and removes it from database
+                foreach ($notifications as $notification)
+                {
+                    //removes each notification
+                    $this->em->remove($notification);
+                    $this->em->flush();
+                }
+            }
+
             //loads every sensor for device
             $sensors = $this->em->getRepository(Sensor::class)->findBy(array('parentDevice'=>$device));
             if ($sensors)
