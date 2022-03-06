@@ -702,22 +702,22 @@ class DeviceController extends AbstractController
             //checks if unique hash is defined
             if (!$_POST['uniqueHash'])
             {
-                throw new Exception("Unique hash is missing.");
+                return new Response('Unique hash is missing.');
             }
             //checks if MAC address is defined
             if (!$_POST['macAddress'])
             {
-                throw new Exception("MAC address is missing.");
+                return new Response('MAC address is missing.');
             }
             //checks if sensor ID is defined
             if (!$_POST['sensorId'])
             {
-                throw new Exception("Sensor Id is missing.");
+                return new Response('Sensor Id is missing.');
             }
             //checks if raw sensor data are defined
             if (!$_POST['rawSensorData'])
             {
-                throw new Exception("Sensor data are missing.");
+                return new Response('Sensor data are missing.');
             }
 
             //assigns values from post to variables
@@ -732,7 +732,7 @@ class DeviceController extends AbstractController
             //if device is not defined throws exception
             if (!$device)
             {
-                throw new Exception("No such device with a specified unique hash or MAC address.");
+                return new Response('No such device with a specified unique hash or MAC address.');
             }
 
             //gets options for device
@@ -741,12 +741,12 @@ class DeviceController extends AbstractController
             //if device is not defined throws exception
             if (!$deviceOptions)
             {
-                throw new Exception("Device is not configured. Please try again later.");
+                return new Response('Device is not configured. Please try again later.');
             }
 
             //checks if device is allowed otherwise throws exception
             if (!$device->getIsAllowed()){
-                throw new Exception("The device is not allowed yet. Please allow the device in the administration first.");
+                return new Response('The device is not allowed yet. Please allow the device in the administration first.');
             }
 
             //loads information about specified sensor
@@ -788,7 +788,7 @@ class DeviceController extends AbstractController
             $this->em->flush();
 
             //returns success message
-            return new Response('Success');
+            return new Response('Data were write successfully.');
         }
         catch (Exception $exception)
         {
@@ -852,7 +852,7 @@ class DeviceController extends AbstractController
             //checks every allowed device activity
             $this->sensorService->checkEveryAllowedDevice();
 
-            return new Response('Success');
+            return new Response('Device data changed successfully');
         }
         catch (Exception $exception)
         {
