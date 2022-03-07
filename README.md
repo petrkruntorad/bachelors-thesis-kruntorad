@@ -4,7 +4,20 @@ This repository contains a bachelor's thesis focused on remote measuring of temp
 
 Used technologies:
 - Symfony 5.3.15
-- Python 3.7
+- Python 3.9
 - Raspberry Pi 3B+
 - Tester Sensors 
   - DS18B20
+Project init
+Installs dependencies
+```
+composer install
+```
+Creates database connection
+```
+php bin/console d:d:c
+```
+Updates database schema
+```
+php bin/console d:s:u --force
+```
