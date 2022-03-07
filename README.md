@@ -8,7 +8,7 @@ Used technologies:
 - Raspberry Pi 3B+
 - Tester Sensors 
   - DS18B20
-Project init
+#Project init
 Installs dependencies
 ```
 composer install
