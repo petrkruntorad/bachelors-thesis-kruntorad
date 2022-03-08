@@ -56,7 +56,7 @@
             </div>
         {% endfor %}
         <div class="row connectedSortable ui-sort">
-            <div class="col-6 d-flex">
+            <div class="col-lg-6 d-flex">
                 <div class="card card-primary card-outline  w-100">
                     <div class="card-header">
                         <h3 class="card-title">
@@ -107,7 +107,7 @@
             </div>
             {% if sensors is defined and sensors is not empty %}
                 {% for sensor in sensors %}
-                    <div class="col-6">
+                    <div class="col-lg-6">
                         <!-- interactive chart -->
                         {% set state = 'card-warning' %}
                         {% if sensorsState is defined and sensorsState is not empty %}
