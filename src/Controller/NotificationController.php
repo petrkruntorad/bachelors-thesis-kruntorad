@@ -60,10 +60,17 @@ class NotificationController extends AbstractController
                 $this->em->persist($notification);
                 $this->em->flush();
 
-                $this->addFlash(
-                    'good',
-                    'Oznámení bylo potvrzeno.'
-                );
+                if($notification->getState() == false){
+                    $this->addFlash(
+                        'good',
+                        'Potvrzení oznámení bylo úspěšně zrušeno.'
+                    );
+                }else{
+                    $this->addFlash(
+                        'good',
+                        'Oznámení bylo potvrzeno.'
+                    );
+                }
             }else{
                 $deviceOptions = $this->em->getRepository(DeviceOptions::class)->findOneBy(array('parentDevice'=>$notification->getParentDevice()));
                 //check if sending of notifications is enabled

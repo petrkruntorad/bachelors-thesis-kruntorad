@@ -63,7 +63,7 @@ class DeviceService
             //returns json with correct formatting
             return json_encode($fileContent, JSON_UNESCAPED_UNICODE);
         } catch (Exception $exception) {
-            //throws exception if error occurts
+            //throws exception if error occurs
             throw new Exception($exception);
         }
 
