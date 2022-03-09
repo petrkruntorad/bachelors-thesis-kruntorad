@@ -36,4 +36,4 @@ Import temperature-measurement.sql
 ## Author
 Petr Kruntorád
 
-[LinkedIn](htps://www.linkedin.com/in/petr-kruntorad)
+[LinkedIn](https://www.linkedin.com/in/petr-kruntorad)
