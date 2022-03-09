@@ -107,29 +107,22 @@ class SensorDataController extends AbstractController
         }else{
             //loads single last value from sensordata
             $sensorData = $this->em->getRepository(SensorData::class)->findOneBy(array('parentSensor'=>$sensor->getId()),array('id'=>'DESC'));
-            //checks
-            if(empty($sensorData)){
-                //creates a fake object
-                $fakeSensorData = new SensorData();
-                $fakeSensorData->setParentSensor($sensor);
-                $fakeSensorData->setSensorData(0);
-                $fakeSensorData->setWriteTimestamp(new \DateTime('1977-01-01'));
-            }
-            //check if date is not null
-            if ($sensorData->getWriteTimestamp() != NULL) {
-                //loads write timestamp for current iteration and converts it to second from 1.1.1970
-                $writeTime = strtotime($sensorData->getWriteTimestamp()->format('Y-m-d H:i:s'));
-                //removes writetime from currentTimestamp
-                $secondsFromWrite = $currentTimestamp - $writeTime;
-                //check if the value is not older than specified amount of seconds
-                if ($secondsFromWrite <= $seconds) {
-                    $defaultTemperature = $sensorData->getSensorData();
+            //checks if sensorData exists
+            if($sensorData){
+                //check if date is not null
+                if ($sensorData->getWriteTimestamp() != NULL) {
+                    //loads write timestamp for current iteration and converts it to second from 1.1.1970
+                    $writeTime = strtotime($sensorData->getWriteTimestamp()->format('Y-m-d H:i:s'));
+                    //removes writetime from currentTimestamp
+                    $secondsFromWrite = $currentTimestamp - $writeTime;
+                    //check if the value is not older than specified amount of seconds
+                    if ($secondsFromWrite <= $seconds) {
+                        $defaultTemperature = $sensorData->getSensorData();
+                    }
                 }
             }
-
             //assign the default value to $data array
             $data['temperatures'] = $defaultTemperature;
-
         }
         //response creation
         //encodes array to json
